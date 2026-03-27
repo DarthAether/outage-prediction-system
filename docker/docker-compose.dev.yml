@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  api:
+    environment:
+      DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - ../backend/src:/app/backend/src
+      - ../config:/app/config
+    command: >
+      uvicorn src.main:app
+        --host 0.0.0.0
+        --port 8000
+        --reload
+        --reload-dir /app/backend/src
+
+  worker:
+    environment:
+      DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - ../backend/src:/app/backend/src
+      - ../config:/app/config
+
+  frontend:
+    environment:
+      DEBUG: "true"
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ../frontend/src:/app/frontend/src
+      - ../frontend/public:/app/frontend/public
+
+  db:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"

@@ -1,0 +1,87 @@
+[project]
+name = "outage-prediction"
+version = "0.1.0"
+description = "Enterprise-grade state-agnostic power outage prediction system"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Vijaya Sivanjan Kommuri"},
+    {name = "Tejaswi Mahadev"},
+    {name = "Rhea Chris Pramila Chase"},
+]
+
+dependencies = [
+    # API
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "websockets>=12.0",
+    # Database
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.29",
+    "alembic>=1.13",
+    "geoalchemy2>=0.14",
+    # Spatial
+    "h3>=4.0",
+    "shapely>=2.0",
+    # Streaming
+    "redis>=5.0",
+    # Config
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "pyyaml>=6.0",
+    # HTTP
+    "httpx>=0.27",
+    # Data
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "pandera>=0.18",
+    # Logging
+    "structlog>=24.1",
+]
+
+[project.optional-dependencies]
+ml = [
+    "xgboost>=2.0",
+    "lightgbm>=4.3",
+    "torch>=2.2",
+    "scikit-learn>=1.4",
+    "optuna>=3.5",
+    "mlflow>=2.11",
+    "shap>=0.45",
+    "scipy>=1.12",
+]
+dev = [
+    "ruff>=0.3",
+    "mypy>=1.8",
+    "pre-commit>=3.6",
+]
+test = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=4.1",
+    "httpx>=0.27",
+    "locust>=2.23",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

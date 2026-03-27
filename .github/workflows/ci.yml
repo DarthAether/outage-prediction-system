@@ -1,0 +1,95 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install ruff mypy
+      - name: Lint with ruff
+        run: ruff check backend/src/
+      - name: Type check
+        run: mypy backend/src/ --ignore-missing-imports
+
+  lint-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx eslint src/
+
+  test-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: timescale/timescaledb-ha:pg16
+        env:
+          POSTGRES_DB: outage_prediction_test
+          POSTGRES_PASSWORD: testpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install backend
+        run: |
+          cd backend
+          pip install -e ".[ml,test]"
+      - name: Run tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: outage_prediction_test
+          DB_USER: postgres
+          DB_PASSWORD: testpassword
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: |
+          cd backend
+          pytest tests/ -v --cov=src --cov-report=xml
+      - name: Check coverage
+        run: |
+          cd backend
+          coverage report --fail-under=80
+
+  build-images:
+    needs: [lint-backend, test-backend]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f docker/Dockerfile.api -t outage-api:latest .
+      - name: Build Worker image
+        run: docker build -f docker/Dockerfile.worker -t outage-worker:latest .
+      - name: Build Frontend image
+        run: docker build -f docker/Dockerfile.frontend -t outage-frontend:latest .

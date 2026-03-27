@@ -1,0 +1,28 @@
+code: CA
+name: California
+states: ["06"]
+risk_thresholds:
+  green: 0.0
+  yellow: 0.20
+  orange: 0.50
+  red: 0.75
+dominant_weather_types:
+  - Wildfire
+  - Heat
+  - High Wind
+  - Drought
+  - Debris Flow
+  - Excessive Heat
+  - Flash Flood
+  - Strong Wind
+seasonal_adjustments:
+  summer:
+    heat_weight: 1.8
+    wildfire_weight: 2.0
+    wind_weight: 1.2
+  autumn:
+    wildfire_weight: 2.5
+    wind_weight: 1.5
+  winter:
+    flood_weight: 1.5
+    heat_weight: 0.2

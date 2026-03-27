@@ -1,0 +1,5 @@
+default_h3_resolution: 7
+prediction_horizon_hours: 24
+uncertainty_mc_samples: 50
+batch_prediction_interval_minutes: 60
+active_regions: ["TX"]

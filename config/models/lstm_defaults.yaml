@@ -1,0 +1,14 @@
+model_type: lstm
+params:
+  input_dim: null  # set dynamically
+  hidden_dim: 128
+  num_layers: 2
+  dropout: 0.3
+  num_heads: 4
+  learning_rate: 0.001
+  batch_size: 64
+  max_epochs: 100
+  patience: 10
+  seq_len: 24
+  scheduler: cosine
+  grad_clip: 1.0

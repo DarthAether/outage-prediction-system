@@ -1,0 +1,24 @@
+code: TX
+name: Texas
+states: ["48"]
+risk_thresholds:
+  green: 0.0
+  yellow: 0.25
+  orange: 0.55
+  red: 0.80
+dominant_weather_types:
+  - Hurricane
+  - Thunderstorm Wind
+  - Ice Storm
+  - Heat
+  - Tornado
+  - High Wind
+  - Winter Storm
+  - Hail
+seasonal_adjustments:
+  summer:
+    heat_weight: 1.5
+    wind_weight: 0.8
+  winter:
+    ice_weight: 2.0
+    heat_weight: 0.3

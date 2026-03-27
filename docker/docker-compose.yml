@@ -1,0 +1,125 @@
+version: "3.9"
+
+services:
+  # ---------------------------------------------------------------------------
+  # TimescaleDB + PostGIS
+  # ---------------------------------------------------------------------------
+  db:
+    image: timescale/timescaledb-ha:pg16
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: outage_prediction
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_MULTIPLE_DATABASES: mlflow
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+      - pgdata:/home/postgres/pgdata/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis (caching, pub/sub, Celery broker)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # MLflow tracking server
+  # ---------------------------------------------------------------------------
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.11.1
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+        --backend-store-uri postgresql://postgres:devpassword@db:5432/mlflow
+        --default-artifact-root /mlflow/artifacts
+        --host 0.0.0.0
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Backend API (FastAPI)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:devpassword@db:5432/outage_prediction
+      REDIS_URL: redis://redis:6379/0
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      LOG_LEVEL: info
+    volumes:
+      - ../backend/src:/app/backend/src:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+
+  # ---------------------------------------------------------------------------
+  # Background worker (batch inference, data ingestion)
+  # ---------------------------------------------------------------------------
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    restart: unless-stopped
+    entrypoint: ["python", "-m", "src.services.batch_service"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:devpassword@db:5432/outage_prediction
+      REDIS_URL: redis://redis:6379/0
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      LOG_LEVEL: info
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Frontend (Next.js / React dev server)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    volumes:
+      - ../frontend/src:/app/frontend/src:ro
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  redisdata:
+  mlflow_artifacts:

@@ -1,0 +1,28 @@
+code: FL
+name: Florida
+states: ["12"]
+risk_thresholds:
+  green: 0.0
+  yellow: 0.20
+  orange: 0.50
+  red: 0.75
+dominant_weather_types:
+  - Hurricane
+  - Thunderstorm Wind
+  - Flood
+  - Tornado
+  - Tropical Storm
+  - Lightning
+  - Storm Surge
+  - Heavy Rain
+seasonal_adjustments:
+  summer:
+    hurricane_weight: 2.0
+    thunderstorm_weight: 1.5
+    flood_weight: 1.3
+  autumn:
+    hurricane_weight: 2.5
+    flood_weight: 1.5
+  winter:
+    hurricane_weight: 0.3
+    thunderstorm_weight: 0.5
