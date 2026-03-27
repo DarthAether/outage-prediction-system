@@ -1,0 +1,308 @@
+{
+  "storm_window": {
+    "start": "2022-03-10 19:02:00",
+    "end": "2022-03-12 19:02:00",
+    "duration_hours": 48,
+    "n_events": 51,
+    "n_categories": 2,
+    "categories": [
+      "flood",
+      "wind"
+    ],
+    "n_h3_cells_affected": 48,
+    "total_damage_usd": 422500.0,
+    "max_magnitude": 65.0,
+    "compound_score": 193.32424057090134
+  },
+  "outage_impact": {
+    "mean_outage_fraction": 0.11708586956521741,
+    "max_outage_fraction": 0.3758,
+    "n_outage_observations": 92,
+    "n_outage_cells": 64
+  },
+  "event_type_breakdown": {
+    "Flash Flood": {
+      "count": 2,
+      "max_magnitude": 0.0,
+      "total_damage": 5000.0
+    },
+    "Flood": {
+      "count": 4,
+      "max_magnitude": 0.0,
+      "total_damage": 0.0
+    },
+    "Heavy Rain": {
+      "count": 2,
+      "max_magnitude": 0.0,
+      "total_damage": 0.0
+    },
+    "Thunderstorm Wind": {
+      "count": 37,
+      "max_magnitude": 65.0,
+      "total_damage": 365500.0
+    },
+    "Tornado": {
+      "count": 6,
+      "max_magnitude": 0.0,
+      "total_damage": 52000.0
+    }
+  },
+  "category_breakdown": {
+    "flood": {
+      "count": 6,
+      "cells": 6
+    },
+    "wind": {
+      "count": 43,
+      "cells": 40
+    }
+  },
+  "compound_event_analysis": {
+    "has_compound_event": true,
+    "n_active_categories": 2,
+    "cooccurrence_pairs": [
+      "flood+wind"
+    ],
+    "n_compound_anchor_samples": 2,
+    "anchor_timestamps": [
+      "2022-04-13 18:00:00",
+      "2022-05-06 12:00:00"
+    ],
+    "compound_features_fired": {
+      "cooccur_flood_wind": {
+        "mean": 1.0,
+        "max": 1.0,
+        "nonzero_pct": 1.0
+      },
+      "compound_event_count": {
+        "mean": 2.0,
+        "max": 2.0,
+        "nonzero_pct": 1.0
+      },
+      "has_compound_event": {
+        "mean": 1.0,
+        "max": 1.0,
+        "nonzero_pct": 1.0
+      },
+      "cat_flood_event_count": {
+        "mean": 1.0,
+        "max": 1.0,
+        "nonzero_pct": 1.0
+      },
+      "cat_wind_max_magnitude": {
+        "mean": 30.5,
+        "max": 61.0,
+        "nonzero_pct": 0.5
+      },
+      "cat_wind_event_count": {
+        "mean": 1.5,
+        "max": 2.0,
+        "nonzero_pct": 1.0
+      },
+      "seq_storm_count_72h": {
+        "mean": 3.0,
+        "max": 3.0,
+        "nonzero_pct": 1.0
+      },
+      "seq_infrastructure_fatigue": {
+        "mean": 6.944444444444445,
+        "max": 13.88888888888889,
+        "nonzero_pct": 0.5
+      },
+      "seq_max_gap_hours": {
+        "mean": 3.033333333333333,
+        "max": 3.3666666666666667,
+        "nonzero_pct": 1.0
+      },
+      "seq_distinct_types": {
+        "mean": 2.5,
+        "max": 3.0,
+        "nonzero_pct": 1.0
+      },
+      "compound_severity_index": {
+        "mean": 0.1288888888888889,
+        "max": 0.14277777777777778,
+        "nonzero_pct": 1.0
+      }
+    }
+  },
+  "model_predictions": {
+    "n_samples": 765,
+    "mean_predicted_probability": 0.41371089220046997,
+    "max_predicted_probability": 0.6671761274337769,
+    "min_predicted_probability": 0.33318305015563965,
+    "predicted_positive_rate": 0.13725490196078433,
+    "actual_positive_rate": 0.12156862745098039,
+    "n_true_positives": 77,
+    "n_false_negatives": 16,
+    "n_false_positives": 28,
+    "n_true_negatives": 644,
+    "high_risk_predictions": 0,
+    "top_contributing_features": [
+      {
+        "feature": "current_load_mw",
+        "importance": 0.009162836708128452,
+        "mean_value": 35035.04296875,
+        "contribution_score": 321.0203857421875
+      },
+      {
+        "feature": "population_density",
+        "importance": 0.006609010975807905,
+        "mean_value": 2494.311279296875,
+        "contribution_score": 16.48493003845215
+      },
+      {
+        "feature": "reserve_margin_pct",
+        "importance": 0.00968240387737751,
+        "mean_value": 58.782352447509766,
+        "contribution_score": 0.5691545009613037
+      },
+      {
+        "feature": "housing_age_median",
+        "importance": 0.007784722838550806,
+        "mean_value": 35.487831115722656,
+        "contribution_score": 0.27626293897628784
+      },
+      {
+        "feature": "cat_wind_total_damage",
+        "importance": 0.00034981072531081736,
+        "mean_value": 398.69281005859375,
+        "contribution_score": 0.1394670158624649
+      },
+      {
+        "feature": "critical_facility_density",
+        "importance": 0.007619038689881563,
+        "mean_value": 5.092398166656494,
+        "contribution_score": 0.03879917785525322
+      },
+      {
+        "feature": "seq_max_gap_hours",
+        "importance": 0.008322489447891712,
+        "mean_value": 3.112614154815674,
+        "contribution_score": 0.0259046982973814
+      },
+      {
+        "feature": "month_sin",
+        "importance": 0.012732806615531445,
+        "mean_value": 0.9077063202857971,
+        "contribution_score": 0.01155764888972044
+      },
+      {
+        "feature": "dow_sin",
+        "importance": 0.015969671308994293,
+        "mean_value": 0.07105620950460434,
+        "contribution_score": 0.010142281651496887
+      },
+      {
+        "feature": "dow_cos",
+        "importance": 0.015623760409653187,
+        "mean_value": -0.028913630172610283,
+        "contribution_score": 0.00990999024361372
+      },
+      {
+        "feature": "weather_max_mag_72h",
+        "importance": 0.008336427621543407,
+        "mean_value": 1.1513856649398804,
+        "contribution_score": 0.009598443284630775
+      },
+      {
+        "feature": "hour_sin",
+        "importance": 0.011953748762607574,
+        "mean_value": -0.040522877126932144,
+        "contribution_score": 0.0059534357860684395
+      },
+      {
+        "feature": "median_income_normalized",
+        "importance": 0.00680680014193058,
+        "mean_value": 0.7568427920341492,
+        "contribution_score": 0.005151677411049604
+      },
+      {
+        "feature": "month_cos",
+        "importance": 0.014850986190140247,
+        "mean_value": 0.04640522971749306,
+        "contribution_score": 0.005115339998155832
+      },
+      {
+        "feature": "hour_cos",
+        "importance": 0.009806226938962936,
+        "mean_value": -0.05228758230805397,
+        "contribution_score": 0.004922341555356979
+      }
+    ]
+  },
+  "compound_features_in_context": {
+    "cooccur_flood_wind": {
+      "mean": 0.00261437908496732,
+      "max": 1.0,
+      "nonzero_pct": 0.00261437908496732
+    },
+    "compound_event_count": {
+      "mean": 0.01568627450980392,
+      "max": 2.0,
+      "nonzero_pct": 0.013071895424836602
+    },
+    "has_compound_event": {
+      "mean": 0.00261437908496732,
+      "max": 1.0,
+      "nonzero_pct": 0.00261437908496732
+    },
+    "cat_flood_event_count": {
+      "mean": 0.00261437908496732,
+      "max": 1.0,
+      "nonzero_pct": 0.00261437908496732
+    },
+    "cat_wind_max_magnitude": {
+      "mean": 0.46143790849673205,
+      "max": 70.0,
+      "nonzero_pct": 0.00784313725490196
+    },
+    "cat_wind_total_damage": {
+      "mean": 398.6928104575163,
+      "max": 100000.0,
+      "nonzero_pct": 0.006535947712418301
+    },
+    "cat_wind_event_count": {
+      "mean": 0.01437908496732026,
+      "max": 2.0,
+      "nonzero_pct": 0.013071895424836602
+    },
+    "seq_storm_count_72h": {
+      "mean": 0.08758169934640522,
+      "max": 5.0,
+      "nonzero_pct": 0.05620915032679739
+    },
+    "seq_escalation_score": {
+      "mean": 0.004684095860566448,
+      "max": 1.0,
+      "nonzero_pct": 0.00784313725490196
+    },
+    "seq_infrastructure_fatigue": {
+      "mean": 0.053018881626724766,
+      "max": 13.88888888888889,
+      "nonzero_pct": 0.013071895424836602
+    },
+    "seq_max_gap_hours": {
+      "mean": 3.112614379084968,
+      "max": 72.0,
+      "nonzero_pct": 0.05620915032679739
+    },
+    "seq_distinct_types": {
+      "mean": 0.06535947712418301,
+      "max": 3.0,
+      "nonzero_pct": 0.05620915032679739
+    },
+    "compound_severity_index": {
+      "mean": 0.0017966695715323166,
+      "max": 0.16133333333333336,
+      "nonzero_pct": 0.05620915032679739
+    }
+  },
+  "context_window": {
+    "n_samples": 765,
+    "time_start": "2022-03-08 00:00:00",
+    "time_end": "2022-05-09 12:00:00",
+    "positive_rate": 0.12156862745098039
+  },
+  "figure_path": "E:\\Personal_projects\\outage-prediction-system\\paper\\figures\\fig_case_study_timeline.png"
+}
