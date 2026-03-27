@@ -124,10 +124,9 @@ async def model_performance(
     if region:
         conditions.append(ModelRegistryEntry.region_code == region)
 
-    stmt = (
-        select(ModelRegistryEntry)
-        .where(and_(*conditions)) if conditions else select(ModelRegistryEntry)
-    )
+    stmt = select(ModelRegistryEntry)
+    if conditions:
+        stmt = stmt.where(and_(*conditions))
     stmt = stmt.order_by(ModelRegistryEntry.created_at.desc()).limit(limit)
 
     result = await session.execute(stmt)
