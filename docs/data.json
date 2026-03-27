@@ -1,0 +1,437 @@
+{
+  "metrics": {
+    "XGBoost": {
+      "auc_roc": 0.9672582304526749,
+      "auc_pr": 0.9448658329475046,
+      "f1": 0.4714086471408647,
+      "precision": 0.31471135940409684,
+      "recall": 0.9388888888888889,
+      "brier_score": 0.13895365595817566,
+      "ece": 0.359536568555567,
+      "log_loss": 0.4653071100972432
+    },
+    "LightGBM": {
+      "auc_roc": 0.9661728395061727,
+      "auc_pr": 0.935721558345808,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "brier_score": 0.08261286730767754,
+      "ece": 0.1493374290856211,
+      "log_loss": 0.2943328432009726
+    },
+    "Ensemble": {
+      "auc_roc": 0.9655092592592593,
+      "auc_pr": 0.9448672724136078,
+      "f1": 0.9473684210526315,
+      "precision": 1.0,
+      "recall": 0.9,
+      "brier_score": 0.09005305561524472,
+      "ece": 0.26697950517476254,
+      "log_loss": 0.3445173011010951
+    }
+  },
+  "dataset_info": {
+    "total_samples": 12000,
+    "n_features": 138,
+    "train_size": 8400,
+    "val_size": 1800,
+    "test_size": 1800,
+    "positive_rate": 0.11225
+  },
+  "ece_before": 0.26697950517476254,
+  "ece_after": 0.004186910183748383,
+  "bootstrap_ci": {
+    "auc_roc": {
+      "mean": 0.9657977711177042,
+      "lower": 0.9438581106293747,
+      "upper": 0.9841048761017358,
+      "std": 0.01031296893148673
+    },
+    "auc_pr": {
+      "mean": 0.9453343955978153,
+      "lower": 0.9136236049459209,
+      "upper": 0.972127957749082,
+      "std": 0.015107015448002536
+    },
+    "brier_score": {
+      "mean": 0.09007541656864439,
+      "lower": 0.08604432171074482,
+      "upper": 0.09453425738868457,
+      "std": 0.0021786860089577065
+    },
+    "ece": {
+      "mean": 0.2673020885537819,
+      "lower": 0.2605124412057136,
+      "upper": 0.2738004976710787,
+      "std": 0.0033191842897980885
+    },
+    "log_loss": {
+      "mean": 0.34455978595352044,
+      "lower": 0.33583026109977515,
+      "upper": 0.35405444734613356,
+      "std": 0.004671154931446081
+    }
+  },
+  "feature_importance": [
+    {
+      "feature": "current_load_mw",
+      "xgb_importance": 0.009162837,
+      "lgb_importance": 7,
+      "avg_importance": 3.504581418354064
+    },
+    {
+      "feature": "housing_age_median",
+      "xgb_importance": 0.007784723,
+      "lgb_importance": 5,
+      "avg_importance": 2.5038923614192754
+    },
+    {
+      "feature": "month_sin",
+      "xgb_importance": 0.012732807,
+      "lgb_importance": 4,
+      "avg_importance": 2.0063664033077657
+    },
+    {
+      "feature": "critical_facility_density",
+      "xgb_importance": 0.0076190387,
+      "lgb_importance": 4,
+      "avg_importance": 2.003809519344941
+    },
+    {
+      "feature": "median_income_normalized",
+      "xgb_importance": 0.0068068,
+      "lgb_importance": 3,
+      "avg_importance": 1.5034034000709653
+    },
+    {
+      "feature": "trend_outage_3h",
+      "xgb_importance": 0.3060398,
+      "lgb_importance": 2,
+      "avg_importance": 1.153019905090332
+    },
+    {
+      "feature": "dow_cos",
+      "xgb_importance": 0.01562376,
+      "lgb_importance": 2,
+      "avg_importance": 1.0078118802048266
+    },
+    {
+      "feature": "trend_outage_6h",
+      "xgb_importance": 0.4008109,
+      "lgb_importance": 1,
+      "avg_importance": 0.7004054486751556
+    },
+    {
+      "feature": "hour_sin",
+      "xgb_importance": 0.011953749,
+      "lgb_importance": 1,
+      "avg_importance": 0.5059768743813038
+    },
+    {
+      "feature": "trend_outage_12h",
+      "xgb_importance": 0.008582571,
+      "lgb_importance": 1,
+      "avg_importance": 0.5042912852950394
+    },
+    {
+      "feature": "weather_count_3h",
+      "xgb_importance": 0.028766254,
+      "lgb_importance": 0,
+      "avg_importance": 0.0143831269815564
+    },
+    {
+      "feature": "is_weekend",
+      "xgb_importance": 0.017326891,
+      "lgb_importance": 0,
+      "avg_importance": 0.0086634457111358
+    },
+    {
+      "feature": "dow_sin",
+      "xgb_importance": 0.015969671,
+      "lgb_importance": 0,
+      "avg_importance": 0.0079848356544971
+    },
+    {
+      "feature": "month_cos",
+      "xgb_importance": 0.014850986,
+      "lgb_importance": 0,
+      "avg_importance": 0.0074254930950701
+    },
+    {
+      "feature": "lag_outage_6h",
+      "xgb_importance": 0.014617422,
+      "lgb_importance": 0,
+      "avg_importance": 0.0073087108321487
+    },
+    {
+      "feature": "lag_outage_12h",
+      "xgb_importance": 0.011045177,
+      "lgb_importance": 0,
+      "avg_importance": 0.0055225882679224
+    },
+    {
+      "feature": "weather_count_48h",
+      "xgb_importance": 0.010344901,
+      "lgb_importance": 0,
+      "avg_importance": 0.0051724505610764
+    },
+    {
+      "feature": "compound_severity_index",
+      "xgb_importance": 0.00992114,
+      "lgb_importance": 0,
+      "avg_importance": 0.0049605700187385
+    },
+    {
+      "feature": "hour_cos",
+      "xgb_importance": 0.009806227,
+      "lgb_importance": 0,
+      "avg_importance": 0.0049031134694814
+    },
+    {
+      "feature": "reserve_margin_pct",
+      "xgb_importance": 0.009682404,
+      "lgb_importance": 0,
+      "avg_importance": 0.0048412019386887
+    },
+    {
+      "feature": "lag_outage_1h",
+      "xgb_importance": 0.009681715,
+      "lgb_importance": 0,
+      "avg_importance": 0.0048408573493361
+    },
+    {
+      "feature": "lag_outage_24h",
+      "xgb_importance": 0.009405961,
+      "lgb_importance": 0,
+      "avg_importance": 0.0047029806300997
+    },
+    {
+      "feature": "weather_max_mag_72h",
+      "xgb_importance": 0.008336428,
+      "lgb_importance": 0,
+      "avg_importance": 0.0041682138107717
+    },
+    {
+      "feature": "seq_max_gap_hours",
+      "xgb_importance": 0.008322489,
+      "lgb_importance": 0,
+      "avg_importance": 0.0041612447239458
+    },
+    {
+      "feature": "population_density",
+      "xgb_importance": 0.006609011,
+      "lgb_importance": 0,
+      "avg_importance": 0.0033045054879039
+    },
+    {
+      "feature": "lag_outage_168h",
+      "xgb_importance": 0.0053454866,
+      "lgb_importance": 0,
+      "avg_importance": 0.0026727432850748
+    },
+    {
+      "feature": "weather_count_12h",
+      "xgb_importance": 0.0051931106,
+      "lgb_importance": 0,
+      "avg_importance": 0.0025965552777051
+    },
+    {
+      "feature": "load_capacity_ratio",
+      "xgb_importance": 0.0045755613,
+      "lgb_importance": 0,
+      "avg_importance": 0.0022877806331962
+    },
+    {
+      "feature": "neighbor_outage_mean",
+      "xgb_importance": 0.004480581,
+      "lgb_importance": 0,
+      "avg_importance": 0.0022402903996407
+    },
+    {
+      "feature": "neighbor_outage_max",
+      "xgb_importance": 0.003033583,
+      "lgb_importance": 0,
+      "avg_importance": 0.0015167915262281
+    }
+  ],
+  "ablation": [
+    {
+      "group_removed": "temporal",
+      "full_value": 0.9676406035665296,
+      "ablated_value": 0.4886968449931412,
+      "delta": 0.4789437585733882
+    },
+    {
+      "group_removed": "spatial",
+      "full_value": 0.9676406035665296,
+      "ablated_value": 0.965267489711934,
+      "delta": 0.0023731138545953
+    },
+    {
+      "group_removed": "compound",
+      "full_value": 0.9676406035665296,
+      "ablated_value": 0.9678532235939644,
+      "delta": -0.0002126200274349
+    },
+    {
+      "group_removed": "socioeconomic",
+      "full_value": 0.9676406035665296,
+      "ablated_value": 0.9696622085048012,
+      "delta": -0.0020216049382716
+    }
+  ],
+  "shap": [
+    {
+      "rank": 1,
+      "feature": "trend_outage_3h",
+      "mean_abs_shap": 0.339885
+    },
+    {
+      "rank": 2,
+      "feature": "trend_outage_6h",
+      "mean_abs_shap": 0.154233
+    },
+    {
+      "rank": 3,
+      "feature": "current_load_mw",
+      "mean_abs_shap": 0.065888
+    },
+    {
+      "rank": 4,
+      "feature": "housing_age_median",
+      "mean_abs_shap": 0.041613
+    },
+    {
+      "rank": 5,
+      "feature": "dow_sin",
+      "mean_abs_shap": 0.039009
+    },
+    {
+      "rank": 6,
+      "feature": "month_sin",
+      "mean_abs_shap": 0.023301
+    },
+    {
+      "rank": 7,
+      "feature": "dow_cos",
+      "mean_abs_shap": 0.018884
+    },
+    {
+      "rank": 8,
+      "feature": "critical_facility_density",
+      "mean_abs_shap": 0.018183
+    },
+    {
+      "rank": 9,
+      "feature": "lag_outage_24h",
+      "mean_abs_shap": 0.015388
+    },
+    {
+      "rank": 10,
+      "feature": "population_density",
+      "mean_abs_shap": 0.015216
+    },
+    {
+      "rank": 11,
+      "feature": "hour_cos",
+      "mean_abs_shap": 0.014451
+    },
+    {
+      "rank": 12,
+      "feature": "median_income_normalized",
+      "mean_abs_shap": 0.013575
+    },
+    {
+      "rank": 13,
+      "feature": "neighbor_outage_mean",
+      "mean_abs_shap": 0.009226
+    },
+    {
+      "rank": 14,
+      "feature": "neighbor_outage_max",
+      "mean_abs_shap": 0.008265
+    },
+    {
+      "rank": 15,
+      "feature": "trend_outage_12h",
+      "mean_abs_shap": 0.004982
+    },
+    {
+      "rank": 16,
+      "feature": "month_cos",
+      "mean_abs_shap": 0.003757
+    },
+    {
+      "rank": 17,
+      "feature": "hour_sin",
+      "mean_abs_shap": 0.003302
+    },
+    {
+      "rank": 18,
+      "feature": "seq_max_gap_hours",
+      "mean_abs_shap": 0.002002
+    },
+    {
+      "rank": 19,
+      "feature": "reserve_margin_pct",
+      "mean_abs_shap": 0.00187
+    },
+    {
+      "rank": 20,
+      "feature": "weather_count_3h",
+      "mean_abs_shap": 0.000709
+    }
+  ],
+  "event_counts": {
+    "Thunderstorm Wind": 434,
+    "Hail": 109,
+    "Flood": 103,
+    "Tornado": 71,
+    "Flash Flood": 69,
+    "Heavy Rain": 69,
+    "Lightning": 46,
+    "Funnel Cloud": 28,
+    "Dust Devil": 1
+  },
+  "cross_state": {
+    "CA": {
+      "XGBoost": {
+        "tx_model_auc": 0.9044703523395909,
+        "local_model_auc": 0.9065608363687306,
+        "auc_gap": 0.0021,
+        "tx_model_f1": 0.88125,
+        "local_model_f1": 0.8387096774193549,
+        "f1_gap": -0.0425
+      },
+      "LightGBM": {
+        "tx_model_auc": 0.9207805057439058,
+        "local_model_auc": 0.9125105071448585,
+        "auc_gap": -0.0083,
+        "tx_model_f1": 0.0,
+        "local_model_f1": 0.0,
+        "f1_gap": 0.0
+      }
+    },
+    "FL": {
+      "XGBoost": {
+        "tx_model_auc": 0.9705438983428097,
+        "local_model_auc": 0.9726887355577588,
+        "auc_gap": 0.0021,
+        "tx_model_f1": 0.965034965034965,
+        "local_model_f1": 0.9484536082474226,
+        "f1_gap": -0.0166
+      },
+      "LightGBM": {
+        "tx_model_auc": 0.9692843123368607,
+        "local_model_auc": 0.9763334412496711,
+        "auc_gap": 0.007,
+        "tx_model_f1": 0.0,
+        "local_model_f1": 0.9550173010380623,
+        "f1_gap": 0.955
+      }
+    }
+  },
+  "n_weather": 930,
+  "n_outages": 6237
+}
