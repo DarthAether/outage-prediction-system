@@ -1,0 +1,152 @@
+[
+  {
+    "rank": 1,
+    "feature": "trend_outage_3h",
+    "mean_abs_shap": 0.339885
+  },
+  {
+    "rank": 2,
+    "feature": "trend_outage_6h",
+    "mean_abs_shap": 0.154233
+  },
+  {
+    "rank": 3,
+    "feature": "current_load_mw",
+    "mean_abs_shap": 0.065888
+  },
+  {
+    "rank": 4,
+    "feature": "housing_age_median",
+    "mean_abs_shap": 0.041613
+  },
+  {
+    "rank": 5,
+    "feature": "dow_sin",
+    "mean_abs_shap": 0.039009
+  },
+  {
+    "rank": 6,
+    "feature": "month_sin",
+    "mean_abs_shap": 0.023301
+  },
+  {
+    "rank": 7,
+    "feature": "dow_cos",
+    "mean_abs_shap": 0.018884
+  },
+  {
+    "rank": 8,
+    "feature": "critical_facility_density",
+    "mean_abs_shap": 0.018183
+  },
+  {
+    "rank": 9,
+    "feature": "lag_outage_24h",
+    "mean_abs_shap": 0.015388
+  },
+  {
+    "rank": 10,
+    "feature": "population_density",
+    "mean_abs_shap": 0.015216
+  },
+  {
+    "rank": 11,
+    "feature": "hour_cos",
+    "mean_abs_shap": 0.014451
+  },
+  {
+    "rank": 12,
+    "feature": "median_income_normalized",
+    "mean_abs_shap": 0.013575
+  },
+  {
+    "rank": 13,
+    "feature": "neighbor_outage_mean",
+    "mean_abs_shap": 0.009226
+  },
+  {
+    "rank": 14,
+    "feature": "neighbor_outage_max",
+    "mean_abs_shap": 0.008265
+  },
+  {
+    "rank": 15,
+    "feature": "trend_outage_12h",
+    "mean_abs_shap": 0.004982
+  },
+  {
+    "rank": 16,
+    "feature": "month_cos",
+    "mean_abs_shap": 0.003757
+  },
+  {
+    "rank": 17,
+    "feature": "hour_sin",
+    "mean_abs_shap": 0.003302
+  },
+  {
+    "rank": 18,
+    "feature": "seq_max_gap_hours",
+    "mean_abs_shap": 0.002002
+  },
+  {
+    "rank": 19,
+    "feature": "reserve_margin_pct",
+    "mean_abs_shap": 0.00187
+  },
+  {
+    "rank": 20,
+    "feature": "weather_count_3h",
+    "mean_abs_shap": 0.000709
+  },
+  {
+    "rank": 21,
+    "feature": "weather_count_48h",
+    "mean_abs_shap": 0.000499
+  },
+  {
+    "rank": 22,
+    "feature": "load_capacity_ratio",
+    "mean_abs_shap": 0.000443
+  },
+  {
+    "rank": 23,
+    "feature": "lag_outage_12h",
+    "mean_abs_shap": 0.000344
+  },
+  {
+    "rank": 24,
+    "feature": "neighbor_outage_spread",
+    "mean_abs_shap": 0.000141
+  },
+  {
+    "rank": 25,
+    "feature": "weather_max_mag_72h",
+    "mean_abs_shap": 0.000119
+  },
+  {
+    "rank": 26,
+    "feature": "lag_outage_6h",
+    "mean_abs_shap": 0.000119
+  },
+  {
+    "rank": 27,
+    "feature": "cat_wind_total_damage",
+    "mean_abs_shap": 6.7e-05
+  },
+  {
+    "rank": 28,
+    "feature": "seq_escalation_score",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "rank": 29,
+    "feature": "seq_distinct_types",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "rank": 30,
+    "feature": "seq_damage_acceleration",
+    "mean_abs_shap": 0.0
+  }
+]

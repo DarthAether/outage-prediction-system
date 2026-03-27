@@ -1,0 +1,152 @@
+\relax 
+\citation{doe2024outage}
+\citation{kenward2014blackout}
+\citation{guikema2010prestorm,nateghi2014comparison}
+\citation{kankanala2014adaboost,eskandarpour2017machine}
+\citation{dehghani2021spatiotemporal,wang2022deep}
+\citation{lee2023eaglei}
+\citation{sharma2023weather,mukherjee2018review}
+\citation{zscheischler2020compound,raymond2020understanding}
+\citation{lakshminarayanan2017simple}
+\citation{guo2017calibration}
+\citation{nateghi2014comparison,eskandarpour2017machine}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
+\citation{guikema2010prestorm}
+\citation{nateghi2014comparison}
+\citation{sharma2023weather}
+\citation{lee2023eaglei}
+\citation{mukherjee2018review}
+\citation{kankanala2014adaboost}
+\citation{eskandarpour2017machine}
+\citation{chen2016xgboost}
+\citation{ke2017lightgbm}
+\citation{dehghani2021spatiotemporal}
+\citation{wang2022deep}
+\citation{guikema2010prestorm}
+\citation{nateghi2014comparison}
+\citation{eskandarpour2017machine}
+\citation{sharma2023weather}
+\citation{dehghani2021spatiotemporal}
+\citation{zscheischler2020compound}
+\citation{raymond2020understanding}
+\citation{beveracqua2021guidelines}
+\citation{lakshminarayanan2017simple}
+\citation{guo2017calibration}
+\citation{zadrozny2002isotonic}
+\citation{gal2016dropout}
+\citation{uber_h3_2018}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{}\protected@file@percent }
+\newlabel{sec:related}{{II}{2}{}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Weather-Driven Outage Prediction}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Machine Learning Approaches}{2}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Comparison with prior outage prediction studies.}}{2}{}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:comparison}{{I}{2}{}{table.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Compound Weather Events}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-D}}Uncertainty Quantification and Calibration}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Data Collection and Preprocessing}{2}{}\protected@file@percent }
+\newlabel{sec:data}{{III}{2}{}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}NOAA Storm Events}{2}{}\protected@file@percent }
+\citation{panteli2015grid}
+\citation{lee2023eaglei}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces NOAA Storm Events distribution for Texas (2022).}}{3}{}\protected@file@percent }
+\newlabel{tab:events}{{II}{3}{}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Outage Target Generation}{3}{}\protected@file@percent }
+\newlabel{sec:synthetic}{{\mbox  {III-B}}{3}{}{subsection.3.2}{}}
+\newlabel{eq:outage_prob}{{1}{3}{}{equation.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Grid Load Data}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Dataset Construction}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Methodology}{3}{}\protected@file@percent }
+\newlabel{sec:methodology}{{IV}{3}{}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Problem Formulation}{3}{}\protected@file@percent }
+\newlabel{eq:features}{{2}{3}{}{equation.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Feature Engineering}{3}{}\protected@file@percent }
+\newlabel{sec:features}{{\mbox  {IV-B}}{3}{}{subsection.4.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-B}1}Temporal Features (48 dimensions)}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-B}2}Spatial Features (13 dimensions)}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-B}3}Compound Event Features (71 dimensions)}{3}{}\protected@file@percent }
+\newlabel{eq:cooccur}{{3}{3}{}{equation.3}{}}
+\citation{chen2016xgboost}
+\citation{ke2017lightgbm}
+\citation{guo2017calibration}
+\citation{zadrozny2002isotonic}
+\newlabel{eq:interact}{{4}{4}{}{equation.4}{}}
+\newlabel{eq:csi}{{5}{4}{}{equation.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-B}4}Socioeconomic Features (4 dimensions)}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Model Architecture}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Uncertainty Quantification}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-D}1}Ensemble Disagreement}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-D}2}Post-Hoc Isotonic Calibration}{4}{}\protected@file@percent }
+\newlabel{eq:ece}{{7}{4}{}{equation.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Dataset partition statistics.}}{4}{}\protected@file@percent }
+\newlabel{tab:splits}{{III}{4}{}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}State-Agnostic Framework}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {V}System Architecture}{4}{}\protected@file@percent }
+\newlabel{sec:architecture}{{V}{4}{}{section.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Experimental Setup}{4}{}\protected@file@percent }
+\newlabel{sec:experiments}{{VI}{4}{}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Temporal Split}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Evaluation Metrics}{4}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Test set performance. Best results in bold. Ensemble F1 is at the validation-optimized threshold of 0.39.}}{5}{}\protected@file@percent }
+\newlabel{tab:main}{{IV}{5}{}{table.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Feature group ablation. Each row removes one group and reports AUC-ROC change relative to the full model (0.968).}}{5}{}\protected@file@percent }
+\newlabel{tab:ablation}{{V}{5}{}{table.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-C}}Baselines}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Results}{5}{}\protected@file@percent }
+\newlabel{sec:results}{{VII}{5}{}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-A}}Main Results}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-B}}Feature Importance and Ablation}{5}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {VI}{\ignorespaces Top 15 features by XGBoost gain importance.}}{5}{}\protected@file@percent }
+\newlabel{tab:top_features}{{VI}{5}{}{table.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Reliability diagram before (dashed) and after (solid) isotonic calibration. Ideal calibration follows the diagonal. Post-calibration ECE = 0.004.}}{5}{}\protected@file@percent }
+\newlabel{fig:calibration}{{1}{5}{}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-C}}Calibration Analysis}{5}{}\protected@file@percent }
+\citation{lundberg2017shap}
+\@writefile{lot}{\contentsline {table}{\numberline {VII}{\ignorespaces Cross-state generalization (fair test-split comparison). TX model evaluated on CA/FL test sets vs.\ locally-trained models.}}{6}{}\protected@file@percent }
+\newlabel{tab:crossstate}{{VII}{6}{}{table.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Top 20 features by average importance across XGBoost and LightGBM, color-coded by group: temporal (blue), spatial (green), compound (red), socioeconomic (orange).}}{6}{}\protected@file@percent }
+\newlabel{fig:importance}{{2}{6}{}{figure.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-D}}Cross-State Generalization}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-E}}Model Explainability}{6}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces SHAP mean absolute values for the top 20 features, providing model-agnostic feature importance.}}{6}{}\protected@file@percent }
+\newlabel{fig:shap}{{3}{6}{}{figure.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VIII}Discussion}{6}{}\protected@file@percent }
+\newlabel{sec:discussion}{{VIII}{6}{}{section.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VIII-A}}Why Temporal Features Dominate}{6}{}\protected@file@percent }
+\citation{li2024gnn}
+\bibstyle{IEEEtran}
+\bibdata{references}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces ROC curves for XGBoost, LightGBM, and the ensemble on the held-out test set.}}{7}{}\protected@file@percent }
+\newlabel{fig:roc}{{4}{7}{}{figure.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VIII-B}}Role of Compound Features}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VIII-C}}Operational Value of Calibrated Uncertainty}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VIII-D}}Limitations}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VIII-E}}Reproducibility}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IX}Conclusion}{7}{}\protected@file@percent }
+\newlabel{sec:conclusion}{{IX}{7}{}{section.9}{}}
+\bibcite{doe2024outage}{1}
+\bibcite{kenward2014blackout}{2}
+\bibcite{guikema2010prestorm}{3}
+\bibcite{nateghi2014comparison}{4}
+\bibcite{kankanala2014adaboost}{5}
+\bibcite{eskandarpour2017machine}{6}
+\bibcite{dehghani2021spatiotemporal}{7}
+\bibcite{wang2022deep}{8}
+\bibcite{lee2023eaglei}{9}
+\bibcite{sharma2023weather}{10}
+\bibcite{mukherjee2018review}{11}
+\bibcite{zscheischler2020compound}{12}
+\bibcite{raymond2020understanding}{13}
+\bibcite{lakshminarayanan2017simple}{14}
+\bibcite{guo2017calibration}{15}
+\bibcite{chen2016xgboost}{16}
+\bibcite{ke2017lightgbm}{17}
+\bibcite{beveracqua2021guidelines}{18}
+\bibcite{zadrozny2002isotonic}{19}
+\bibcite{gal2016dropout}{20}
+\bibcite{uber_h3_2018}{21}
+\bibcite{panteli2015grid}{22}
+\bibcite{lundberg2017shap}{23}
+\bibcite{li2024gnn}{24}
+\@writefile{toc}{\contentsline {section}{References}{8}{}\protected@file@percent }
+\gdef \@abspage@last{8}

@@ -402,6 +402,15 @@ Fig.~\ref{fig:importance} presents the feature importance ranking color-coded by
     \label{fig:importance}
 \end{figure}
 
+Fig.~\ref{fig:shap} presents SHAP~\cite{lundberg2017shap} beeswarm values for the top 20 features, providing instance-level explanations. The short-term outage trends (\texttt{trend\_outage\_3h}, mean $|\text{SHAP}| = 0.340$) dominate, with high positive values strongly pushing predictions toward the outage class. The \texttt{weather\_count\_3h} feature (rank 20) shows an interaction effect visible in the SHAP dependence plot: its impact on predictions is amplified when the \texttt{compound\_severity\_index} is simultaneously elevated, providing model-level evidence for the compound event hypothesis.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/fig_shap_bar.pdf}
+    \caption{SHAP mean absolute values for the top 20 features, providing model-agnostic feature importance.}
+    \label{fig:shap}
+\end{figure}
+
 Fig.~\ref{fig:roc} shows ROC curves for both base learners and the ensemble, demonstrating that all three achieve near-identical discrimination (AUC $> 0.96$).
 
 \begin{figure}[t]
