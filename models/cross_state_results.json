@@ -1,0 +1,291 @@
+{
+  "description": "Cross-state generalization evaluation",
+  "all_results": [
+    {
+      "model": "TX-trained XGBoost",
+      "dataset": "TX",
+      "auc_roc": 0.98002852485482,
+      "f1": 0.8898081985708913,
+      "precision": 0.9016768292682927,
+      "recall": 0.8782479584261321,
+      "accuracy": 0.9755833333333334,
+      "n_samples": 12000,
+      "positive_rate": 0.11225000023841858
+    },
+    {
+      "model": "TX-trained LightGBM",
+      "dataset": "TX",
+      "auc_roc": 0.9650120341409033,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.88775,
+      "n_samples": 12000,
+      "positive_rate": 0.11225000023841858
+    },
+    {
+      "model": "TX-trained XGBoost",
+      "dataset": "CA",
+      "auc_roc": 0.9344949037967808,
+      "f1": 0.8652694610778443,
+      "precision": 0.9021852237252862,
+      "recall": 0.8312559923298178,
+      "accuracy": 0.973,
+      "n_samples": 10000,
+      "positive_rate": 0.10429999977350235
+    },
+    {
+      "model": "TX-trained LightGBM",
+      "dataset": "CA",
+      "auc_roc": 0.9403013288909587,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.8957,
+      "n_samples": 10000,
+      "positive_rate": 0.10429999977350235
+    },
+    {
+      "model": "TX-trained XGBoost",
+      "dataset": "FL",
+      "auc_roc": 0.9253015224003729,
+      "f1": 0.8618576143328619,
+      "precision": 0.9022704837117473,
+      "recall": 0.8249097472924187,
+      "accuracy": 0.9707,
+      "n_samples": 10000,
+      "positive_rate": 0.11079999804496765
+    },
+    {
+      "model": "TX-trained LightGBM",
+      "dataset": "FL",
+      "auc_roc": 0.9302230963296421,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.8892,
+      "n_samples": 10000,
+      "positive_rate": 0.11079999804496765
+    },
+    {
+      "model": "CA-trained XGBoost",
+      "dataset": "CA",
+      "auc_roc": 0.9065608363687306,
+      "f1": 0.8387096774193549,
+      "precision": 0.8461538461538461,
+      "recall": 0.8313953488372093,
+      "accuracy": 0.9633333333333334,
+      "n_samples": 1500,
+      "positive_rate": 0.1146666631102562
+    },
+    {
+      "model": "CA-trained LightGBM",
+      "dataset": "CA",
+      "auc_roc": 0.9125105071448585,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.8853333333333333,
+      "n_samples": 1500,
+      "positive_rate": 0.1146666631102562
+    },
+    {
+      "model": "TX-trained XGBoost (test split)",
+      "dataset": "CA",
+      "auc_roc": 0.9044703523395909,
+      "f1": 0.88125,
+      "precision": 0.9527027027027027,
+      "recall": 0.8197674418604651,
+      "accuracy": 0.9746666666666667,
+      "n_samples": 1500,
+      "positive_rate": 0.1146666631102562
+    },
+    {
+      "model": "TX-trained LightGBM (test split)",
+      "dataset": "CA",
+      "auc_roc": 0.9207805057439058,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.8853333333333333,
+      "n_samples": 1500,
+      "positive_rate": 0.1146666631102562
+    },
+    {
+      "model": "FL-trained XGBoost",
+      "dataset": "FL",
+      "auc_roc": 0.9726887355577588,
+      "f1": 0.9484536082474226,
+      "precision": 0.9517241379310345,
+      "recall": 0.9452054794520548,
+      "accuracy": 0.99,
+      "n_samples": 1500,
+      "positive_rate": 0.09733333438634872
+    },
+    {
+      "model": "FL-trained LightGBM",
+      "dataset": "FL",
+      "auc_roc": 0.9763334412496711,
+      "f1": 0.9550173010380623,
+      "precision": 0.965034965034965,
+      "recall": 0.9452054794520548,
+      "accuracy": 0.9913333333333333,
+      "n_samples": 1500,
+      "positive_rate": 0.09733333438634872
+    },
+    {
+      "model": "TX-trained XGBoost (test split)",
+      "dataset": "FL",
+      "auc_roc": 0.9705438983428097,
+      "f1": 0.965034965034965,
+      "precision": 0.9857142857142858,
+      "recall": 0.9452054794520548,
+      "accuracy": 0.9933333333333333,
+      "n_samples": 1500,
+      "positive_rate": 0.09733333438634872
+    },
+    {
+      "model": "TX-trained LightGBM (test split)",
+      "dataset": "FL",
+      "auc_roc": 0.9692843123368607,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.9026666666666666,
+      "n_samples": 1500,
+      "positive_rate": 0.09733333438634872
+    }
+  ],
+  "fair_comparison": {
+    "CA": [
+      {
+        "model": "CA-trained XGBoost",
+        "dataset": "CA",
+        "auc_roc": 0.9065608363687306,
+        "f1": 0.8387096774193549,
+        "precision": 0.8461538461538461,
+        "recall": 0.8313953488372093,
+        "accuracy": 0.9633333333333334,
+        "n_samples": 1500,
+        "positive_rate": 0.1146666631102562
+      },
+      {
+        "model": "CA-trained LightGBM",
+        "dataset": "CA",
+        "auc_roc": 0.9125105071448585,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.8853333333333333,
+        "n_samples": 1500,
+        "positive_rate": 0.1146666631102562
+      },
+      {
+        "model": "TX-trained XGBoost (test split)",
+        "dataset": "CA",
+        "auc_roc": 0.9044703523395909,
+        "f1": 0.88125,
+        "precision": 0.9527027027027027,
+        "recall": 0.8197674418604651,
+        "accuracy": 0.9746666666666667,
+        "n_samples": 1500,
+        "positive_rate": 0.1146666631102562
+      },
+      {
+        "model": "TX-trained LightGBM (test split)",
+        "dataset": "CA",
+        "auc_roc": 0.9207805057439058,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.8853333333333333,
+        "n_samples": 1500,
+        "positive_rate": 0.1146666631102562
+      }
+    ],
+    "FL": [
+      {
+        "model": "FL-trained XGBoost",
+        "dataset": "FL",
+        "auc_roc": 0.9726887355577588,
+        "f1": 0.9484536082474226,
+        "precision": 0.9517241379310345,
+        "recall": 0.9452054794520548,
+        "accuracy": 0.99,
+        "n_samples": 1500,
+        "positive_rate": 0.09733333438634872
+      },
+      {
+        "model": "FL-trained LightGBM",
+        "dataset": "FL",
+        "auc_roc": 0.9763334412496711,
+        "f1": 0.9550173010380623,
+        "precision": 0.965034965034965,
+        "recall": 0.9452054794520548,
+        "accuracy": 0.9913333333333333,
+        "n_samples": 1500,
+        "positive_rate": 0.09733333438634872
+      },
+      {
+        "model": "TX-trained XGBoost (test split)",
+        "dataset": "FL",
+        "auc_roc": 0.9705438983428097,
+        "f1": 0.965034965034965,
+        "precision": 0.9857142857142858,
+        "recall": 0.9452054794520548,
+        "accuracy": 0.9933333333333333,
+        "n_samples": 1500,
+        "positive_rate": 0.09733333438634872
+      },
+      {
+        "model": "TX-trained LightGBM (test split)",
+        "dataset": "FL",
+        "auc_roc": 0.9692843123368607,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.9026666666666666,
+        "n_samples": 1500,
+        "positive_rate": 0.09733333438634872
+      }
+    ]
+  },
+  "summary": {
+    "CA": {
+      "XGBoost": {
+        "tx_model_auc": 0.9044703523395909,
+        "local_model_auc": 0.9065608363687306,
+        "auc_gap": 0.0021,
+        "tx_model_f1": 0.88125,
+        "local_model_f1": 0.8387096774193549,
+        "f1_gap": -0.0425
+      },
+      "LightGBM": {
+        "tx_model_auc": 0.9207805057439058,
+        "local_model_auc": 0.9125105071448585,
+        "auc_gap": -0.0083,
+        "tx_model_f1": 0.0,
+        "local_model_f1": 0.0,
+        "f1_gap": 0.0
+      }
+    },
+    "FL": {
+      "XGBoost": {
+        "tx_model_auc": 0.9705438983428097,
+        "local_model_auc": 0.9726887355577588,
+        "auc_gap": 0.0021,
+        "tx_model_f1": 0.965034965034965,
+        "local_model_f1": 0.9484536082474226,
+        "f1_gap": -0.0166
+      },
+      "LightGBM": {
+        "tx_model_auc": 0.9692843123368607,
+        "local_model_auc": 0.9763334412496711,
+        "auc_gap": 0.007,
+        "tx_model_f1": 0.0,
+        "local_model_f1": 0.9550173010380623,
+        "f1_gap": 0.955
+      }
+    }
+  }
+}

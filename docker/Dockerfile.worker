@@ -18,8 +18,11 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY backend/ backend/
+COPY config/ config/
 
 RUN pip install --upgrade pip setuptools wheel \
     && pip install ".[ml]"
+
+ENV PYTHONPATH=/app/backend
 
 CMD ["python", "-m", "src.services.batch_service"]
