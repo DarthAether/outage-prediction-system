@@ -22,7 +22,7 @@ st.set_page_config(
     page_title="GridShield AI — Outage Prediction",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 # ── Premium Custom CSS ───────────────────────────────────────
@@ -71,10 +71,60 @@ header {visibility: hidden;}
     font-size: 0.7rem !important;
 }
 
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
-    border-right: 1px solid rgba(99,102,241,0.15);
+/* Hide sidebar completely */
+[data-testid="stSidebar"] { display: none; }
+[data-testid="stSidebarCollapsedControl"] { display: none; }
+
+/* Top nav bar */
+.top-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(99,102,241,0.12);
+    flex-wrap: wrap;
+}
+.nav-brand {
+    font-size: 1.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #818cf8, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-right: 24px;
+    white-space: nowrap;
+}
+.nav-meta {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: rgba(148,163,184,0.5);
+    white-space: nowrap;
+}
+.nav-meta strong { color: rgba(148,163,184,0.8); }
+
+/* Nav buttons styled as tabs */
+.stButton > button {
+    background: transparent !important;
+    border: 1px solid rgba(99,102,241,0.1) !important;
+    border-radius: 10px !important;
+    color: #94a3b8 !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    padding: 8px 12px !important;
+    transition: all 0.2s ease !important;
+    font-family: 'Inter', sans-serif !important;
+}
+.stButton > button:hover {
+    background: rgba(99,102,241,0.12) !important;
+    border-color: rgba(99,102,241,0.3) !important;
+    color: #e2e8f0 !important;
+    transform: translateY(-1px);
+}
+.stButton > button:active, .stButton > button:focus {
+    background: rgba(99,102,241,0.2) !important;
+    border-color: #6366f1 !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 0 12px rgba(99,102,241,0.2) !important;
 }
 
 /* Tabs */
@@ -241,48 +291,44 @@ PLOTLY_LAYOUT = dict(
 )
 COLORS = ["#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe", "#22c55e", "#f59e0b", "#ef4444"]
 
-# ── Sidebar ──────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown("""
-    <div style="text-align:center; padding: 16px 0;">
-        <div style="font-size: 2.5rem;">🛡️</div>
-        <div style="font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #818cf8, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">GridShield AI</div>
-        <div style="font-size: 0.75rem; color: rgba(148,163,184,0.6); margin-top: 4px;">Outage Prediction System</div>
-    </div>
-    """, unsafe_allow_html=True)
+# ── Top Navigation ───────────────────────────────────────────
+PAGES = ["Overview", "Live Prediction", "Model Performance", "Feature Analysis", "Cross-State", "Data Explorer"]
+ICONS = ["🏠", "⚡", "📊", "🔬", "🌎", "📁"]
 
-    st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
-
-    page = st.radio("", [
-        "🏠 Overview",
-        "⚡ Live Prediction",
-        "📊 Model Performance",
-        "🔬 Feature Analysis",
-        "🌎 Cross-State",
-        "📁 Data Explorer",
-    ], label_visibility="collapsed")
-
-    st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="padding: 12px; background: rgba(99,102,241,0.08); border-radius: 12px; border: 1px solid rgba(99,102,241,0.15);">
-        <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #818cf8; margin-bottom: 8px;">IEEE SPICES 2026</div>
-        <div style="font-size: 0.8rem; color: #94a3b8;">Paper ID: <strong style="color: #e2e8f0;">822</strong></div>
-        <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;"><span class="status-dot status-green"></span>Submitted</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("")
-    st.markdown("""
-    <div style="font-size: 0.7rem; color: rgba(148,163,184,0.4); line-height: 1.6;">
-        <strong style="color: rgba(148,163,184,0.6);">Authors</strong><br>
-        Kommuri &middot; Mahadev &middot; Chase<br><br>
-        <strong style="color: rgba(148,163,184,0.6);">Guide</strong><br>
-        Dr. Mohammed Adam Baba<br><br>
-        <strong style="color: rgba(148,163,184,0.6);">Institution</strong><br>
+st.markdown("""
+<div class="top-nav">
+    <span style="font-size:1.5rem; margin-right:6px;">🛡️</span>
+    <span class="nav-brand">GridShield AI</span>
+    <span class="nav-meta">
+        <span class="status-dot status-green"></span>
+        IEEE SPICES 2026 &middot; Paper #822 &middot;
+        Kommuri &middot; Mahadev &middot; Chase &middot;
+        <strong>Dr. Mohammed Adam Baba</strong> &middot;
         Malla Reddy University
-    </div>
-    """, unsafe_allow_html=True)
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+nav_cols = st.columns(len(PAGES))
+page_selection = None
+for i, (col, pg, icon) in enumerate(zip(nav_cols, PAGES, ICONS)):
+    if col.button(f"{icon} {pg}", use_container_width=True, key=f"nav_{i}"):
+        st.session_state["page"] = pg
+
+if "page" not in st.session_state:
+    st.session_state["page"] = "Overview"
+page = st.session_state["page"]
+
+# Map to old page names for compatibility
+page_map = {
+    "Overview": "🏠 Overview",
+    "Live Prediction": "⚡ Live Prediction",
+    "Model Performance": "📊 Model Performance",
+    "Feature Analysis": "🔬 Feature Analysis",
+    "Cross-State": "🌎 Cross-State",
+    "Data Explorer": "📁 Data Explorer",
+}
+page = page_map.get(page, "🏠 Overview")
 
 # ── Page: Overview ───────────────────────────────────────────
 if page == "🏠 Overview":
