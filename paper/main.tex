@@ -70,13 +70,13 @@ power outage prediction, compound weather events, uncertainty quantification, en
 
 The reliability of electric power distribution directly shapes economic productivity, public health, and quality of life. According to the U.S.\ Department of Energy, the average American customer experienced approximately 7.3 hours of service interruption in 2023, and weather-driven outages have been the dominant cause of large-scale disruptions for more than two decades~\cite{doe2024outage}. Between 2000 and 2023 the annual number of billion-dollar weather disasters in the continental United States roughly doubled, tightening the coupling between climate variability and grid vulnerability~\cite{kenward2014blackout}. Accurate 24-hour-ahead predictions of outage risk at fine spatial resolution would enable utilities to pre-position crews, issue targeted customer alerts, and prioritize infrastructure hardening investments.
 
-A growing body of work applies machine learning to outage estimation. Early efforts relied on generalized linear models and Bayesian networks fitted to hurricane wind fields~\cite{guikema2010prestorm,nateghi2014comparison}. More recent studies leverage gradient-boosted trees~\cite{kankanala2014adaboost,eskandarpour2017machine}, deep networks~\cite{dehghani2021spatiotemporal,wang2022deep}, and large observational datasets such as the Department of Energy's EAGLE-I platform~\cite{lee2023eaglei}. Despite this progress, three significant gaps persist.
+A growing body of work applies machine learning to outage estimation. Early efforts relied on generalized linear models and Bayesian networks fitted to hurricane wind fields~\cite{guikema2010prestorm,nateghi2011comparison}. More recent studies leverage gradient-boosted trees~\cite{kankanala2014adaboost,eskandarpour2017machine}, deep networks~\cite{jaech2019outage,xie2020review}, and large observational datasets such as the Department of Energy's EAGLE-I platform~\cite{brelsford2024eaglei}. Despite this progress, three significant gaps persist.
 
-\textbf{Gap~1: Independent event treatment.} Almost all existing models ingest weather covariates---wind speed, precipitation, temperature---as independent features~\cite{sharma2023weather,mukherjee2018review}. In practice, outage risk scales superlinearly when multiple hazards co-occur or arrive in rapid succession. The February 2021 Texas winter crisis, for example, involved overlapping ice accumulation, sustained sub-freezing temperatures, and high wind, producing outages far in excess of what any single hazard model would have predicted. The climate science community has formalized these phenomena as \emph{compound events}~\cite{zscheischler2020compound,raymond2020understanding}, yet the power systems literature has not incorporated such interaction terms.
+\textbf{Gap~1: Independent event treatment.} Almost all existing models ingest weather covariates---wind speed, precipitation, temperature---as independent features~\cite{cerrai2019predicting,mukherjee2018review}. In practice, outage risk scales superlinearly when multiple hazards co-occur or arrive in rapid succession. The February 2021 Texas winter crisis, for example, involved overlapping ice accumulation, sustained sub-freezing temperatures, and high wind, producing outages far in excess of what any single hazard model would have predicted. The climate science community has formalized these phenomena as \emph{compound events}~\cite{zscheischler2020compound,raymond2020understanding}, yet the power systems literature has not incorporated such interaction terms.
 
 \textbf{Gap~2: Point estimates without calibrated uncertainty.} Most deployed outage models output a single predicted probability or outage count. Operators need to know not just the expected risk but also how much confidence to place in that estimate. Uncalibrated probabilities lead to systematic over- or under-response. Uncertainty quantification methods such as deep ensembles~\cite{lakshminarayanan2017simple} and post-hoc calibration~\cite{guo2017calibration} have proven effective in other safety-critical domains but remain largely unexplored in outage forecasting.
 
-\textbf{Gap~3: State-specific models that fail to generalize.} Published models are typically trained and validated on data from a single utility or state~\cite{nateghi2014comparison,eskandarpour2017machine}. Deploying such a model in a new territory requires collecting region-specific training data and retraining from scratch. This is impractical for the roughly 3{,}000 electric utilities in the U.S.\ that lack internal data science capacity.
+\textbf{Gap~3: State-specific models that fail to generalize.} Published models are typically trained and validated on data from a single utility or state~\cite{nateghi2011comparison,eskandarpour2017machine}. Deploying such a model in a new territory requires collecting region-specific training data and retraining from scratch. This is impractical for the roughly 3{,}000 electric utilities in the U.S.\ that lack internal data science capacity.
 
 We make the following contributions:
 \begin{enumerate}
@@ -95,11 +95,11 @@ The remainder of this paper is organized as follows. Section~\ref{sec:related} s
 
 \subsection{Weather-Driven Outage Prediction}
 
-Statistical outage models date to the early 2000s, when Guikema et al.~\cite{guikema2010prestorm} fitted negative binomial regression models to hurricane wind field and exposure data. Nateghi et al.~\cite{nateghi2014comparison} compared Bayesian additive regression trees to random forests for predicting hurricane-induced outage durations. More recently, Sharma et al.~\cite{sharma2023weather} used weather radar composites and gradient-boosted trees to estimate county-level outage counts across the eastern United States, demonstrating that high-resolution precipitation data improves predictions for convective storms. Lee et al.~\cite{lee2023eaglei} introduced the EAGLE-I dataset, which aggregates 15-minute county-level outage counts from more than 2{,}700 U.S.\ utilities, opening the door to national-scale analyses. Mukherjee et al.~\cite{mukherjee2018review} provide a comprehensive review, noting that most studies focus on a single weather type---typically hurricanes or ice storms---and do not account for interactions between hazard types.
+Statistical outage models date to the early 2000s, when Guikema et al.~\cite{guikema2010prestorm} fitted negative binomial regression models to hurricane wind field and exposure data. Nateghi et al.~\cite{nateghi2011comparison} compared Bayesian additive regression trees to random forests for predicting hurricane-induced outage durations. More recently, Cerrai et al.~\cite{cerrai2019predicting} introduced new representations of weather and vegetation in an outage prediction model for distribution networks in the northeastern United States, demonstrating that storm classification and multimodel optimization substantially reduce prediction error. Brelsford et al.~\cite{brelsford2024eaglei} published the EAGLE-I dataset, which aggregates 15-minute county-level outage counts from more than 2{,}700 U.S.\ utilities, opening the door to national-scale analyses. Mukherjee et al.~\cite{mukherjee2018review} provide a comprehensive review, noting that most studies focus on a single weather type---typically hurricanes or ice storms---and do not account for interactions between hazard types.
 
 \subsection{Machine Learning Approaches}
 
-Kankanala et al.~\cite{kankanala2014adaboost} applied AdaBoost to distribution-level outage estimation, showing that ensemble tree methods outperform logistic regression when feature interactions are present. Eskandarpour and Khodaei~\cite{eskandarpour2017machine} trained random forests on severe weather data from NOAA and demonstrated that spatial features such as vegetation density significantly improve predictions. Chen and Guestrin~\cite{chen2016xgboost} introduced XGBoost; Ke et al.~\cite{ke2017lightgbm} proposed LightGBM with histogram-based splitting. Dehghani et al.~\cite{dehghani2021spatiotemporal} applied LSTMs to spatiotemporal outage sequences, encoding 48-hour weather histories. Wang et al.~\cite{wang2022deep} surveyed deep learning for power system resilience. Table~\ref{tab:comparison} positions our work relative to key prior studies.
+Kankanala et al.~\cite{kankanala2014adaboost} applied AdaBoost to distribution-level outage estimation, showing that ensemble tree methods outperform logistic regression when feature interactions are present. Eskandarpour and Khodaei~\cite{eskandarpour2017machine} trained random forests on severe weather data from NOAA and demonstrated that spatial features such as vegetation density significantly improve predictions. Chen and Guestrin~\cite{chen2016xgboost} introduced XGBoost; Ke et al.~\cite{ke2017lightgbm} proposed LightGBM with histogram-based splitting. Jaech et al.~\cite{jaech2019outage} used neural networks with natural language processing of field reports to predict the duration of distribution system outages in real time. Xie et al.~\cite{xie2020review} surveyed machine learning applications in power system resilience. Table~\ref{tab:comparison} positions our work relative to key prior studies.
 
 \begin{table}[t]
 \centering
@@ -111,10 +111,10 @@ Kankanala et al.~\cite{kankanala2014adaboost} applied AdaBoost to distribution-l
  & & \textbf{Events} & & \textbf{State} & \\
 \midrule
 Guikema~\cite{guikema2010prestorm} & GLM & \texttimes & \texttimes & \texttimes & --- \\
-Nateghi~\cite{nateghi2014comparison} & BART/RF & \texttimes & \texttimes & \texttimes & --- \\
+Nateghi~\cite{nateghi2011comparison} & BART/RF & \texttimes & \texttimes & \texttimes & --- \\
 Eskandarpour~\cite{eskandarpour2017machine} & RF & \texttimes & \texttimes & \texttimes & 0.82 \\
-Sharma~\cite{sharma2023weather} & XGB & \texttimes & \texttimes & \texttimes & 0.85 \\
-Dehghani~\cite{dehghani2021spatiotemporal} & LSTM & \texttimes & \texttimes & \texttimes & 0.83 \\
+Cerrai~\cite{cerrai2019predicting} & RT & \texttimes & \texttimes & \texttimes & --- \\
+Jaech~\cite{jaech2019outage} & NN+NLP & \texttimes & \texttimes & \texttimes & --- \\
 \textbf{Ours} & \textbf{XGB+LGB} & \checkmark & \checkmark & \checkmark & \textbf{0.967} \\
 \bottomrule
 \end{tabular}
@@ -172,7 +172,7 @@ The generator assigns each NOAA event type a base outage probability calibrated 
 \end{equation}
 where $P_{\text{base}}$ is the event-type baseline, $M_f = \min(1, m/100)$ is the normalized magnitude factor, $D_f = \min(1, \ln(1+D)/15)$ is the log-transformed damage factor, and $\epsilon \sim \mathcal{N}(0, 0.05)$ adds stochastic variation. When an outage is triggered, its severity (fraction of customers affected) decays over 1--6 hours to model crew restoration dynamics.
 
-This methodology produces 12{,}478 outage observations across 1{,}591 H3 cells with a mean outage fraction of 0.026, consistent with the EAGLE-I observation that typical outage events affect 2--5\% of customers in the affected area~\cite{lee2023eaglei}.
+This methodology produces 12{,}478 outage observations across 1{,}591 H3 cells with a mean outage fraction of 0.026, consistent with the EAGLE-I observation that typical outage events affect 2--5\% of customers in the affected area~\cite{brelsford2024eaglei}.
 
 \subsection{Grid Load Data}
 
@@ -465,7 +465,7 @@ With ECE of 0.004, operators can interpret predicted probabilities at face value
 
 \textbf{Single year of data.} Training on 2022 data alone limits the model's exposure to rare but high-impact events (e.g., Winter Storm Uri in 2021, Hurricane Harvey in 2017). Multi-year training would improve coverage of tail events and seasonal variability.
 
-\textbf{No grid topology.} The model operates on H3 cells without knowledge of the underlying electrical network. Incorporating substation locations, feeder routes, and switch gear configurations---potentially via graph neural networks~\cite{li2024gnn}---would enable infrastructure-specific vulnerability assessment.
+\textbf{No grid topology.} The model operates on H3 cells without knowledge of the underlying electrical network. Incorporating substation locations, feeder routes, and switch gear configurations---potentially via graph neural networks~\cite{owerko2018gnn}---would enable infrastructure-specific vulnerability assessment.
 
 \textbf{Static socioeconomic features.} Population density and housing age are assigned per cell without temporal variation, limiting the model's ability to capture infrastructure investment dynamics.
 
