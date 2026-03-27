@@ -55,7 +55,7 @@ class TestNeighborhoodAggregation:
         ts = datetime(2023, 6, 15, 12, 0)
 
         features = self.builder.neighborhood_aggregation(
-            "87283082ffff", empty_weather, empty_outage, ts
+            "87489e346ffffff", empty_weather, empty_outage, ts
         )
 
         assert features["neighbor_weather_count"] == 0.0

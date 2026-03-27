@@ -43,7 +43,7 @@ def sample_outage_observations():
         "customers_out": rng.poisson(50, n),
         "total_customers": 10000,
         "outage_fraction": rng.uniform(0, 0.1, n),
-        "h3_index_res7": "87283082ffff",
+        "h3_index_res7": "87489e346ffffff",
     })
 
 
@@ -78,7 +78,7 @@ def sample_training_data():
     df = pd.DataFrame(features, columns=columns)
     df["target_outage"] = targets
     df["timestamp"] = pd.date_range("2023-01-01", periods=n, freq="h")
-    df["h3_cell"] = "87283082ffff"
+    df["h3_cell"] = "87489e346ffffff"
     df["target_max_outage_fraction"] = targets * rng.uniform(0, 0.3, n)
 
     return df
