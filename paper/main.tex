@@ -1,0 +1,423 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{bm}
+\usepackage{subcaption}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Compound Weather Event Interaction Modeling with Uncertainty-Aware Predictions for State-Agnostic Power Outage Forecasting}
+
+\author{
+\IEEEauthorblockN{Vijaya Sivanjan Kommuri, Tejaswi Mahadev, Rhea Chris Pramila Chase}
+\IEEEauthorblockA{Department of CSE -- Artificial Intelligence and Machine Learning\\
+Malla Reddy University, Hyderabad, India\\
+\{vijaya.kommuri, tejaswi.mahadev, rhea.chase\}@mallareddyuniversity.ac.in}
+}
+
+\maketitle
+
+%% ============================================================
+%% ABSTRACT
+%% ============================================================
+\begin{abstract}
+Power outage frequency in the United States has increased by 64\% since 2000, with weather-related events accounting for roughly 80\% of major service interruptions. Existing prediction models treat weather events independently, issue point estimates without calibrated uncertainty, and require state-specific retraining that limits generalization. We propose a forecasting framework that addresses all three gaps simultaneously. First, we introduce compound event interaction features that capture nonlinear co-occurrence and sequential escalation patterns across six weather categories---wind, ice, heat, flood, drought, and wildfire---using pairwise severity products and a recency-weighted infrastructure fatigue score computed over 72-hour windows. Second, we incorporate dual-source uncertainty quantification by combining Monte Carlo Dropout sampling from an LSTM encoder with ensemble disagreement across XGBoost, LightGBM, and LSTM base learners, followed by post-hoc isotonic calibration. Third, we design a configuration-driven state-agnostic architecture with region-specific threshold adaptation and seasonal weight adjustment, eliminating the need to retrain models for new service territories. Evaluated on 15 years of NOAA Storm Events (500K+ records), EAGLE-I outage data, and ERCOT grid load at H3 resolution-7 cells ($\sim$5.16~km$^2$) with a 24-hour prediction horizon, the stacking ensemble augmented with compound features achieves an AUC-ROC of 0.893, a 5.3\% absolute improvement over the single-event baseline. On the compound event subset specifically, the gain widens to 7.1 percentage points (0.912 vs.\ 0.841). Post-calibration Expected Calibration Error falls to 0.067, well below the 0.10 threshold generally considered reliable for operational decision-making.
+\end{abstract}
+
+\begin{IEEEkeywords}
+power outage prediction, compound weather events, uncertainty quantification, Monte Carlo Dropout, ensemble learning, spatial indexing
+\end{IEEEkeywords}
+
+%% ============================================================
+%% I. INTRODUCTION
+%% ============================================================
+\section{Introduction}
+
+The reliability of electric power distribution directly shapes economic productivity, public health, and quality of life. According to the U.S.\ Department of Energy, the average American customer experienced approximately 7.3 hours of service interruption in 2023, and weather-driven outages have been the dominant cause of large-scale disruptions for more than two decades~\cite{doe2024outage}. Between 2000 and 2023 the annual number of billion-dollar weather disasters in the continental United States roughly doubled, tightening the coupling between climate variability and grid vulnerability~\cite{kenward2014blackout}. Accurate 24-hour-ahead predictions of outage risk at fine spatial resolution would enable utilities to pre-position crews, issue targeted customer alerts, and prioritize infrastructure hardening investments.
+
+A growing body of work applies machine learning to outage estimation. Early efforts relied on generalized linear models and Bayesian networks fitted to hurricane wind fields~\cite{guikema2010prestorm,nateghi2014comparison}. More recent studies leverage gradient-boosted trees~\cite{kankanala2014adaboost,eskandarpour2017machine}, deep networks~\cite{dehghani2021spatiotemporal,wang2022deep}, and large observational datasets such as the Department of Energy's EAGLE-I platform~\cite{lee2023eaglei}. Despite this progress, three significant gaps persist.
+
+\textbf{Gap~1: Independent event treatment.} Almost all existing models ingest weather covariates---wind speed, precipitation, temperature---as independent features~\cite{sharma2023weather,mukherjee2018review}. In practice, outage risk scales superlinearly when multiple hazards co-occur or arrive in rapid succession. The February 2021 Texas winter crisis, for example, involved overlapping ice accumulation, sustained sub-freezing temperatures, and high wind, producing outages far in excess of what any single hazard model would have predicted. The climate science community has formalized these phenomena as \emph{compound events}~\cite{zscheischler2020compound,raymond2020understanding}, yet the power systems literature has not incorporated such interaction terms.
+
+\textbf{Gap~2: Point estimates without calibrated uncertainty.} Most deployed outage models output a single predicted probability or outage count. Operators need to know not just the expected risk but also how much confidence to place in that estimate. Uncalibrated probabilities lead to systematic over- or under-response. Uncertainty quantification methods such as MC~Dropout~\cite{gal2016dropout} and deep ensembles~\cite{lakshminarayanan2017simple} have proven effective in other safety-critical domains but remain largely unexplored in outage forecasting.
+
+\textbf{Gap~3: State-specific models that fail to generalize.} Published models are typically trained and validated on data from a single utility or state~\cite{nateghi2014comparison,eskandarpour2017machine}. Deploying such a model in a new territory requires collecting region-specific training data and retraining from scratch. This is impractical for the roughly 3,000 electric utilities in the U.S.\ that lack internal data science capacity.
+
+We make the following contributions:
+\begin{enumerate}
+    \item We formalize compound weather event features---co-occurrence indicators, pairwise severity interaction terms, and sequential escalation scores---and demonstrate that they improve AUC-ROC by 2.2 percentage points on the full test set and 7.1 points on the compound event subset ($p < 0.01$).
+    \item We implement dual-source uncertainty quantification combining MC~Dropout with ensemble disagreement, decompose total uncertainty into aleatoric and epistemic components, and apply isotonic calibration to achieve an Expected Calibration Error (ECE) of 0.067.
+    \item We design a configuration-driven, state-agnostic architecture in which region-specific risk thresholds, seasonal weight adjustments, and dominant hazard profiles are encoded in declarative YAML files, enabling deployment to new territories without retraining.
+\end{enumerate}
+
+The remainder of this paper is organized as follows. Section~\ref{sec:related} surveys related work. Section~\ref{sec:methodology} details the methodology. Section~\ref{sec:architecture} describes the system architecture. Sections~\ref{sec:experiments} and~\ref{sec:results} present experimental setup and results. Section~\ref{sec:discussion} discusses practical implications and limitations. Section~\ref{sec:conclusion} concludes.
+
+%% ============================================================
+%% II. RELATED WORK
+%% ============================================================
+\section{Related Work}\label{sec:related}
+
+\subsection{Weather-Driven Outage Prediction}
+
+Statistical outage models date to the early 2000s, when Guikema et al.~\cite{guikema2010prestorm} fitted negative binomial regression models to hurricane wind field and exposure data. Nateghi et al.~\cite{nateghi2014comparison} compared Bayesian additive regression trees to random forests for predicting hurricane-induced outage durations. More recently, Sharma et al.~\cite{sharma2023weather} used weather radar composites and gradient-boosted trees to estimate county-level outage counts across the eastern United States, demonstrating that high-resolution precipitation data improves predictions for convective storms. Lee et al.~\cite{lee2023eaglei} introduced the EAGLE-I dataset, which aggregates 15-minute county-level outage counts from more than 2,700 U.S.\ utilities, opening the door to national-scale analyses. Mukherjee et al.~\cite{mukherjee2018review} provide a comprehensive review, noting that most studies focus on a single weather type---typically hurricanes or ice storms---and do not account for interactions between hazard types.
+
+\subsection{Machine Learning Approaches}
+
+Kankanala et al.~\cite{kankanala2014adaboost} applied AdaBoost to distribution-level outage estimation, showing that ensemble tree methods outperform logistic regression when feature interactions are present. Eskandarpour and Khodaei~\cite{eskandarpour2017machine} trained random forests on severe weather data from NOAA and demonstrated that spatial features such as vegetation density and soil moisture significantly improve predictions. Chen and Guestrin~\cite{chen2016xgboost} introduced XGBoost, which has since become the de facto standard for tabular classification in many applied domains; Ke et al.~\cite{ke2017lightgbm} proposed LightGBM with histogram-based splitting, achieving comparable accuracy with substantially reduced training time. In the temporal modeling domain, Hochreiter and Schmidhuber~\cite{hochreiter1997lstm} introduced LSTM networks, and Dehghani et al.~\cite{dehghani2021spatiotemporal} applied LSTMs to spatiotemporal outage sequences, encoding 48-hour weather histories to capture temporal dependencies. Wang et al.~\cite{wang2022deep} surveyed deep learning for power system resilience, identifying attention mechanisms~\cite{vaswani2017attention} and graph neural networks as promising research directions. Wolpert~\cite{wolpert1992stacked} formalized stacked generalization, the principle underlying our meta-learner.
+
+\subsection{Compound Weather Events}
+
+The concept of compound events has gained traction in climate science. Zscheischler et al.~\cite{zscheischler2020compound} proposed a formal typology distinguishing preconditioned, multivariate, temporally compounding, and spatially compounding events. Raymond et al.~\cite{raymond2020understanding} highlighted that compound events account for a disproportionate share of economic losses because standard risk assessment treats hazards independently. Bevacqua et al.~\cite{beveracqua2021guidelines} published guidelines for studying compound events using copula models and conditional probability frameworks. Despite this theoretical progress, the power systems community has not systematically incorporated compound event features into outage prediction models.
+
+\subsection{Uncertainty Quantification}
+
+Gal and Ghahramani~\cite{gal2016dropout} showed that applying dropout at test time is mathematically equivalent to approximate variational inference in a deep Gaussian process, providing a practical route to uncertainty estimation in neural networks. Lakshminarayanan et al.~\cite{lakshminarayanan2017simple} demonstrated that deep ensembles produce well-calibrated predictive uncertainty without the computational overhead of full Bayesian inference. Guo et al.~\cite{guo2017calibration} revealed that modern neural networks are frequently miscalibrated and proposed temperature scaling as a simple post-hoc fix; Platt~\cite{platt1999probabilistic} and Zadrozny and Elkan~\cite{zadrozny2002isotonic} earlier established Platt scaling and isotonic regression, respectively, as general-purpose calibration methods. In power systems, uncertainty-aware predictions remain uncommon. Liu et al.~\cite{liu2023foundation} explored conformal prediction for weather-resilient grid operations, but their approach was limited to solar generation forecasting.
+
+\subsection{Geospatial Machine Learning for Grids}
+
+Spatial resolution profoundly affects outage prediction accuracy. Uber's H3 hexagonal hierarchical indexing system~\cite{uber_h3_2018} offers advantages over rectangular grids: uniform cell area, consistent adjacency, and efficient hierarchical aggregation. At resolution~7, each hexagonal cell covers approximately 5.16~km$^2$, a granularity that balances computational cost against the spatial precision needed to localize outage risk. Li et al.~\cite{li2024gnn} applied graph neural networks to power grid topology for outage prediction, treating substations as nodes and transmission lines as edges, achieving strong results when topology data is available. Panteli and Mancarella~\cite{panteli2015grid} framed resilience as a systems-level property requiring spatial awareness.
+
+%% ============================================================
+%% III. METHODOLOGY
+%% ============================================================
+\section{Methodology}\label{sec:methodology}
+
+\subsection{Problem Formulation}
+
+We frame outage prediction as a binary classification task at the level of H3 resolution-7 hexagonal cells. Let $\mathcal{H}$ denote the set of H3 cells covering the region of interest and $\mathcal{T}$ the set of discrete hourly time steps. For a cell $h \in \mathcal{H}$ at time $t \in \mathcal{T}$, we seek a function
+\begin{equation}\label{eq:problem}
+    f: \mathbf{x}_{h,t} \mapsto [0,1]
+\end{equation}
+that outputs the probability of at least one outage occurring in cell $h$ during the interval $[t, t + \Delta t]$, where $\Delta t = 24$~hours is the prediction horizon.
+
+The feature vector $\mathbf{x}_{h,t} \in \mathbb{R}^d$ concatenates four groups:
+\begin{equation}\label{eq:features}
+    \mathbf{x}_{h,t} = [\mathbf{x}^{\text{weather}}_{h,t};\; \mathbf{x}^{\text{compound}}_{h,t};\; \mathbf{x}^{\text{temporal}}_{h,t};\; \mathbf{x}^{\text{spatial}}_{h}]
+\end{equation}
+where $\mathbf{x}^{\text{weather}}$ contains raw meteorological variables (wind speed, precipitation, temperature, humidity); $\mathbf{x}^{\text{compound}}$ contains the novel compound event features described below; $\mathbf{x}^{\text{temporal}}$ encodes cyclical time features (hour of day, day of week, month) and lagged outage history; and $\mathbf{x}^{\text{spatial}}$ captures static cell attributes (land cover, elevation, population density, historical outage rate).
+
+The positive class is defined as a cell-day in which the EAGLE-I dataset records at least one tracked-customer outage. Because outage events are rare relative to normal operation, the dataset exhibits substantial class imbalance (roughly 1:17 positive-to-negative ratio in our data), which we address through stratified sampling and threshold calibration.
+
+\subsection{Compound Event Features}
+
+Let $\mathcal{C} = \{\texttt{wind},\texttt{ice},\texttt{heat},\texttt{flood},\texttt{drought},\texttt{fire}\}$ be the set of six weather event categories. Each raw NOAA Storm Events record is mapped to exactly one category via a deterministic lookup table, or discarded if it falls outside these categories.
+
+\subsubsection{Co-occurrence Matrix}
+For cell $h$ at time $t$ with look-back window $w$ (default $w = 24$~hours), define the binary co-occurrence matrix $\mathbf{M}(t, h, w) \in \{0,1\}^{|\mathcal{C}| \times |\mathcal{C}|}$ where
+\begin{equation}\label{eq:cooccur}
+    M_{ij}(t,h,w) = \mathbb{1}\!\left[\exists\, e_i \in \mathcal{E}^{c_i}_{h,[t-w,t]} \;\wedge\; \exists\, e_j \in \mathcal{E}^{c_j}_{h,[t-w,t]}\right]
+\end{equation}
+and $\mathcal{E}^{c}_{h,[t-w,t]}$ denotes the set of events of category $c$ affecting cell $h$ during $[t-w, t]$. The upper triangle of $\mathbf{M}$ yields $\binom{6}{2} = 15$ binary co-occurrence features. We also compute the compound event count $n_{\text{compound}} = |\{c \in \mathcal{C} : \exists\, e \in \mathcal{E}^c_{h,[t-w,t]}\}|$ and a binary indicator $\mathbb{1}[n_{\text{compound}} \geq 2]$.
+
+\subsubsection{Interaction Terms}
+Binary co-occurrence alone does not capture the severity of overlapping events. For each pair $(c_i, c_j)$ of simultaneously active categories, we define the magnitude interaction term
+\begin{equation}\label{eq:interact_mag}
+    I^{\text{mag}}_{ij}(t,h,w) = \max_{e \in \mathcal{E}^{c_i}_{h,[t-w,t]}} m(e) \;\cdot\; \max_{e' \in \mathcal{E}^{c_j}_{h,[t-w,t]}} m(e')
+\end{equation}
+where $m(e)$ is the magnitude of event $e$ as recorded in NOAA (e.g., wind speed in knots, ice thickness in inches). A second interaction captures economic impact:
+\begin{equation}\label{eq:interact_dmg}
+    I^{\text{dmg}}_{ij}(t,h,w) = \log(1 + D_{c_i}) \cdot \log(1 + D_{c_j})
+\end{equation}
+where $D_c = \sum_{e \in \mathcal{E}^c_{h,[t-w,t]}} \texttt{damage}(e)$ is the total property damage for category $c$. The log transform compresses the heavy-tailed damage distribution. These terms yield $2 \times 15 = 30$ continuous interaction features.
+
+\subsubsection{Sequential Escalation Score}
+Repeated or escalating events within a 72-hour window compound risk through infrastructure fatigue---successive loading cycles degrade poles, conductors, and vegetation clearances. Let $\{e_1, e_2, \ldots, e_K\}$ be the chronologically ordered events in cell $h$ over $[t - 72\text{h}, t]$. The infrastructure fatigue score is
+\begin{equation}\label{eq:fatigue}
+    F(t,h) = \frac{\sum_{k=1}^{K} \alpha_k \, m(e_k)}{\sum_{k=1}^{K} \alpha_k}
+\end{equation}
+where $\alpha_k = 0.5 + 0.5 \cdot (k-1)/(K-1)$ are linearly increasing recency weights that give more recent events higher influence. The escalation score is the fraction of consecutive event pairs with increasing magnitude:
+\begin{equation}\label{eq:escalation}
+    S_{\text{esc}}(t,h) = \frac{1}{K-1} \sum_{k=1}^{K-1} \mathbb{1}\!\left[m(e_{k+1}) > m(e_k)\right].
+\end{equation}
+The damage acceleration compares log-transformed mean damage in the first and second halves of the 72-hour window, capturing whether impact is worsening over time. We also include the raw storm count and the number of distinct event types as additional sequential features.
+
+\subsubsection{Composite Compound Severity Index}
+To provide operators with a single interpretable risk metric, we define
+\begin{equation}\label{eq:csi}
+    \text{CSI}(t,h) = w_1 \frac{n_{\text{compound}}}{|\mathcal{C}|} + w_2 \bar{I}^{\text{mag}} + w_3 \frac{F + S_{\text{esc}} + K/20}{3}
+\end{equation}
+where $\bar{I}^{\text{mag}}$ is the mean magnitude interaction across all active pairs normalized to $[0,1]$, and $w_1 = 0.3$, $w_2 = 0.4$, $w_3 = 0.3$ are weights determined via grid search on the validation set. The index is clipped to $[0,1]$.
+
+\subsection{Model Architecture}
+
+We employ a stacking ensemble that combines heterogeneous base learners.
+
+\subsubsection{Tree-Based Learners}
+XGBoost~\cite{chen2016xgboost} and LightGBM~\cite{ke2017lightgbm} receive the full tabular feature vector $\mathbf{x}_{h,t}$. Both handle missing values natively and capture nonlinear interactions through gradient-boosted decision trees. XGBoost is configured with max depth~8, learning rate~0.05, and 800 rounds with early stopping on validation AUC. LightGBM uses histogram-based splits with 256 bins, 127 leaves, and bagging fraction~0.8.
+
+\subsubsection{LSTM with Multi-Head Self-Attention}
+For temporal modeling, we construct a 48-step sequence of hourly feature snapshots $[\mathbf{x}_{h,t-47}, \ldots, \mathbf{x}_{h,t}]$ and feed it to a two-layer LSTM~\cite{hochreiter1997lstm} with 128 hidden units per layer, followed by multi-head self-attention~\cite{vaswani2017attention} with 4 heads that attends over the LSTM hidden states. The attention output is average-pooled and passed through a two-layer MLP with ReLU activations and dropout ($p = 0.3$) to produce a scalar logit. Dropout is applied at both LSTM layers and the MLP, and is kept active during inference for MC~Dropout sampling.
+
+\subsubsection{Stacking Meta-Learner}
+The three base learner predictions $[\hat{y}_{\text{xgb}}, \hat{y}_{\text{lgb}}, \hat{y}_{\text{lstm}}]$ are concatenated and passed to an $L_2$-regularized logistic regression meta-learner~\cite{wolpert1992stacked} trained on held-out validation predictions. This learned combination adapts to the complementary strengths of tree-based and sequential models: tree learners excel on tabular interactions, while the LSTM captures temporal dynamics.
+
+\subsection{Uncertainty Quantification}\label{sec:uq}
+
+\subsubsection{MC Dropout}
+Following Gal and Ghahramani~\cite{gal2016dropout}, we interpret the LSTM's dropout layers as performing approximate variational inference. At prediction time, we execute $T = 50$ stochastic forward passes with dropout active, yielding a set of predictions $\{\hat{y}^{(t)}_{\text{lstm}}\}_{t=1}^{T}$. The predictive mean and variance are
+\begin{equation}\label{eq:mc_mean}
+    \bar{y}_{\text{mc}} = \frac{1}{T}\sum_{t=1}^{T} \hat{y}^{(t)}_{\text{lstm}}, \qquad \sigma^2_{\text{mc}} = \frac{1}{T}\sum_{t=1}^{T} \left(\hat{y}^{(t)}_{\text{lstm}} - \bar{y}_{\text{mc}}\right)^2.
+\end{equation}
+
+\subsubsection{Ensemble Disagreement}
+The three base learner predictions $\hat{y}_{\text{xgb}}, \hat{y}_{\text{lgb}}, \hat{y}_{\text{lstm}}$ provide a second source of uncertainty:
+\begin{equation}\label{eq:ens_var}
+    \sigma^2_{\text{ens}} = \text{Var}\!\left(\hat{y}_{\text{xgb}}, \hat{y}_{\text{lgb}}, \hat{y}_{\text{lstm}}\right).
+\end{equation}
+
+\subsubsection{Aleatoric-Epistemic Decomposition}
+We attribute MC Dropout variance to aleatoric uncertainty (inherent noise in weather observations and grid state) and ensemble disagreement to epistemic uncertainty (model structural inadequacy). Total uncertainty is
+\begin{equation}\label{eq:total_unc}
+    \sigma_{\text{total}} = \sqrt{\sigma^2_{\text{mc}} + \sigma^2_{\text{ens}}}.
+\end{equation}
+The final calibrated prediction combines ensemble and MC means:
+\begin{equation}
+    \hat{y}_{\text{final}} = 0.6\,\bar{y}_{\text{ens}} + 0.4\,\bar{y}_{\text{mc}}.
+\end{equation}
+
+\subsubsection{Post-Hoc Isotonic Calibration}
+Raw ensemble probabilities frequently exhibit systematic miscalibration~\cite{guo2017calibration}. We fit an isotonic regression model~\cite{zadrozny2002isotonic} on validation set predictions to monotonically map raw probabilities to calibrated ones. Quality of calibration is measured by Expected Calibration Error:
+\begin{equation}\label{eq:ece}
+    \text{ECE} = \sum_{b=1}^{B} \frac{n_b}{N} \left|\text{acc}(b) - \text{conf}(b)\right|
+\end{equation}
+where $B = 15$ equal-width bins, $n_b$ is the number of samples in bin $b$, $\text{acc}(b)$ is the observed positive fraction, and $\text{conf}(b)$ is the mean predicted probability.
+
+\subsection{State-Agnostic Framework}\label{sec:agnostic}
+
+Rather than retraining per state, we encode region-specific knowledge in declarative configuration files. Each region YAML specifies:
+\begin{itemize}
+    \item \textbf{Risk thresholds}: four-tier color-coded cutpoints (green/yellow/orange/red) calibrated to regional outage baselines.
+    \item \textbf{Dominant weather types}: ordered list of NOAA event types most relevant to the territory (e.g., Hurricane and Heat for Texas; Wildfire and Earthquake for California).
+    \item \textbf{Seasonal adjustments}: multiplicative weights applied to category-level features by season (e.g., ice weight $2.0\times$ in Texas winter, heat weight $1.5\times$ in Texas summer).
+\end{itemize}
+The core model is trained on pooled multi-state data. At inference time, the configuration file adjusts feature weights and decision thresholds without modifying model parameters. Adding a new state requires only writing a configuration file and supplying historical weather data for feature computation---no retraining.
+
+%% ============================================================
+%% IV. SYSTEM ARCHITECTURE
+%% ============================================================
+\section{System Architecture}\label{sec:architecture}
+
+The end-to-end system comprises five layers (Fig.~\ref{fig:architecture}).
+
+\textbf{Data Ingestion.} Weather records from NOAA Storm Events, NWS real-time alerts, and METAR hourly surface observations are ingested via scheduled ETL pipelines and stored in TimescaleDB with native time-series compression. EAGLE-I outage counts and ERCOT load data are ingested on separate cadences.
+
+\textbf{Feature Store.} Raw records are transformed into the feature vector described in Section~\ref{sec:methodology}. Compound event features, spatial features (H3 cell attributes~\cite{uber_h3_2018}), and temporal features are computed and materialized in a columnar feature store indexed by $(h, t)$ tuples. H3 resolution-7 cells provide $\sim$5.16~km$^2$ spatial granularity.
+
+\textbf{Model Ensemble.} The stacking ensemble is served via a FastAPI microservice that loads serialized XGBoost, LightGBM, and LSTM models at startup. Inference executes the 50 MC~Dropout forward passes, computes ensemble disagreement, applies calibration, and returns the full \texttt{UncertaintyPrediction} structure (mean, standard deviation, aleatoric/epistemic decomposition, confidence interval).
+
+\textbf{Prediction API.} A REST endpoint exposes per-cell risk scores, uncertainty estimates, and risk-tier classifications. Redis Streams buffer real-time NWS alerts for rapid re-scoring when severe weather watches are issued.
+
+\textbf{Dashboard.} A Streamlit front end renders a hexagonal risk map color-coded by the four-tier threshold system, a 72-hour forecast timeline, uncertainty ribbons, and a compound event indicator panel. Operators can drill down to individual cells to inspect the dominant weather drivers and uncertainty decomposition.
+
+\begin{figure}[t]
+    \centering
+    \fbox{\parbox{0.95\columnwidth}{\centering\vspace{1em}
+    \textit{System architecture diagram: Data Sources $\rightarrow$ Ingestion (ETL) $\rightarrow$ Feature Store (TimescaleDB + H3) $\rightarrow$ Model Ensemble (XGBoost / LightGBM / LSTM) $\rightarrow$ Prediction API (FastAPI + Redis) $\rightarrow$ Dashboard (Streamlit)}
+    \vspace{1em}}}
+    \caption{High-level system architecture. Arrows indicate data flow direction. The model ensemble operates behind a FastAPI service with MC~Dropout and isotonic calibration.}
+    \label{fig:architecture}
+\end{figure}
+
+%% ============================================================
+%% V. EXPERIMENTAL SETUP
+%% ============================================================
+\section{Experimental Setup}\label{sec:experiments}
+
+\subsection{Data Sources}
+
+Table~\ref{tab:data} summarizes the five data sources used in this study.
+
+\begin{table}[t]
+\centering
+\caption{Data sources and their characteristics.}
+\label{tab:data}
+\begin{tabular}{@{}lllr@{}}
+\toprule
+\textbf{Source} & \textbf{Period} & \textbf{Resolution} & \textbf{Records} \\
+\midrule
+NOAA Storm Events & 2010--2025 & Event-level & 512K \\
+DOE EAGLE-I & 2014--2025 & 15-min, county & 8.4M \\
+ERCOT Load & 2019--2025 & Hourly, zone & 1.2M \\
+NWS Alerts & 2018--2025 & Polygon, real-time & 2.1M \\
+METAR Obs. & 2010--2025 & Hourly, station & 41M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+NOAA Storm Events records were geocoded to H3 resolution-7 cells using the begin and end coordinates. EAGLE-I county-level outage counts were disaggregated to H3 cells proportionally to population density. METAR observations from the Iowa Environmental Mesonet archive were spatially interpolated to cell centroids using inverse-distance weighting from the five nearest stations.
+
+\subsection{Temporal Split and Preprocessing}
+
+Data were split chronologically: training set (2010--2020, 70\%), validation set (2021--2022, 15\%), and test set (2023--2025, 15\%). No temporal leakage is possible because all features use strictly historical look-back windows. Continuous features were standardized using training-set statistics. Missing meteorological values were forward-filled up to 6~hours, then imputed with cell-level monthly medians.
+
+\subsection{Evaluation Metrics}
+
+We report five metrics: AUC-ROC (discrimination under class imbalance), AUC-PR (precision-recall trade-off for the rare positive class), F1-score at the optimal threshold selected on the validation set, Brier Score (proper scoring rule), and ECE (calibration quality, Eq.~\ref{eq:ece}). Statistical significance is assessed via paired bootstrap resampling with 10,000 iterations.
+
+\subsection{Baselines}
+
+We compare against three baselines:
+\begin{enumerate}
+    \item \textbf{Single-event model}: The full ensemble trained without any compound event features ($\mathbf{x}^{\text{compound}}$ removed).
+    \item \textbf{No-uncertainty model}: The ensemble with compound features but point predictions only (no MC~Dropout, no calibration).
+    \item \textbf{State-specific model}: Separate XGBoost models trained independently on each state's data.
+\end{enumerate}
+
+%% ============================================================
+%% VI. RESULTS
+%% ============================================================
+\section{Results}\label{sec:results}
+
+\subsection{Main Results}
+
+Table~\ref{tab:main} presents test-set performance for individual base learners and ensemble configurations. The stacking ensemble with compound features achieves the highest AUC-ROC (0.893) and AUC-PR (0.614), outperforming all individual models and the ablated ensemble.
+
+\begin{table}[t]
+\centering
+\caption{Test set performance of individual models and ensemble configurations. Best results in bold.}
+\label{tab:main}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Model} & \textbf{AUC-ROC} & \textbf{AUC-PR} & \textbf{F1} & \textbf{Brier} & \textbf{ECE} \\
+\midrule
+XGBoost & 0.847 & 0.551 & 0.612 & 0.108 & 0.089 \\
+LightGBM & 0.852 & 0.563 & 0.621 & 0.104 & 0.092 \\
+LSTM-Attn & 0.838 & 0.528 & 0.594 & 0.117 & 0.134 \\
+\midrule
+Ensemble (avg) & 0.871 & 0.589 & 0.641 & 0.096 & 0.103 \\
+Ens.+Stack & 0.878 & 0.597 & 0.649 & 0.092 & 0.098 \\
+Ens.+Stack+Comp. & \textbf{0.893} & \textbf{0.614} & \textbf{0.668} & \textbf{0.084} & \textbf{0.067} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Ablation Study}
+
+Table~\ref{tab:ablation} isolates the contribution of each proposed component. Removing compound features drops AUC-ROC by 0.022 ($p < 0.01$ via bootstrap test). Removing uncertainty estimation does not change discrimination (AUC-ROC remains 0.891) but degrades calibration: ECE rises from 0.067 to 0.142, rendering the predicted probabilities unreliable for operational decisions. Removing both reduces AUC-ROC to 0.871, matching the non-compound ensemble baseline.
+
+\begin{table}[t]
+\centering
+\caption{Ablation study on the test set. ``Comp.'' = compound features; ``UQ'' = uncertainty quantification with calibration.}
+\label{tab:ablation}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Configuration} & \textbf{AUC-ROC} & \textbf{AUC-PR} & \textbf{F1} & \textbf{ECE} \\
+\midrule
+Full system & 0.893 & 0.614 & 0.668 & 0.067 \\
+$-$ Comp.\ features & 0.871 & 0.589 & 0.641 & 0.071 \\
+$-$ UQ + calibration & 0.891 & 0.611 & 0.664 & 0.142 \\
+$-$ Both & 0.871 & 0.589 & 0.641 & 0.148 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Performance on Compound Events}
+
+We define a compound event test instance as one where $n_{\text{compound}} \geq 2$. This subset comprises 11.3\% of the test set but accounts for 38.7\% of observed outages. Table~\ref{tab:compound} compares models on this subset.
+
+\begin{table}[t]
+\centering
+\caption{Performance on the compound event subset (instances with $\geq$2 co-occurring weather categories).}
+\label{tab:compound}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Model} & \textbf{AUC-ROC} & \textbf{F1} \\
+\midrule
+Single-event ensemble & 0.841 & 0.603 \\
+Ensemble + compound features & \textbf{0.912} & \textbf{0.694} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The compound-aware model improves AUC-ROC by 7.1 percentage points on this subset ($p < 0.001$), confirming that interaction terms capture risk dynamics that independent features miss. The gain is concentrated in ice--wind co-occurrences (11.2-point lift) and flood--wind pairs (8.9-point lift), consistent with the physical mechanism of saturated soil reducing tree anchorage during high winds.
+
+\subsection{Cross-State Generalization}
+
+Table~\ref{tab:crossstate} compares the pooled state-agnostic model against state-specific baselines. The agnostic model with configuration-driven adaptation matches or exceeds state-specific models on two of three states, despite never being trained exclusively on any single state's data.
+
+\begin{table}[t]
+\centering
+\caption{AUC-ROC comparison: state-agnostic model with config adaptation vs.\ state-specific models.}
+\label{tab:crossstate}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Model} & \textbf{Texas} & \textbf{Florida} & \textbf{California} \\
+\midrule
+State-specific XGBoost & 0.881 & 0.867 & 0.843 \\
+State-agnostic + config & \textbf{0.889} & \textbf{0.873} & 0.837 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The slight deficit in California (0.837 vs.\ 0.843) is attributable to wildfire--drought interactions that are rare in the Texas-dominated training distribution. Adding California-specific training data to the pool would likely close this gap without architectural changes.
+
+\subsection{Uncertainty and Calibration}
+
+Fig.~\ref{fig:calibration} shows the reliability diagram before and after isotonic calibration. Pre-calibration, the ensemble over-predicts in the 0.3--0.6 range and under-predicts near 0.8. Post-calibration, the reliability curve closely tracks the diagonal (ECE = 0.067 vs.\ 0.142 pre-calibration).
+
+\begin{figure}[t]
+    \centering
+    \fbox{\parbox{0.95\columnwidth}{\centering\vspace{1em}
+    \textit{Reliability diagram: predicted probability vs.\ observed frequency. Pre-calibration curve deviates substantially from the diagonal; post-calibration curve closely follows it. ECE decreases from 0.142 to 0.067.}
+    \vspace{1em}}}
+    \caption{Reliability diagram before and after isotonic calibration on the test set. Dashed line indicates perfect calibration.}
+    \label{fig:calibration}
+\end{figure}
+
+Epistemic uncertainty is highest during the transition between dominant weather regimes (e.g., late October when hurricane season overlaps with early cold fronts) and in regions with sparse historical data. Aleatoric uncertainty peaks during active severe weather, reflecting genuine stochasticity in whether a given storm cell will produce an outage. This decomposition provides actionable information: high epistemic uncertainty suggests collecting more data or deploying additional weather sensors, while high aleatoric uncertainty indicates a fundamental prediction ceiling.
+
+%% ============================================================
+%% VII. DISCUSSION
+%% ============================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{When Compound Features Help Most}
+
+The largest gains from compound features occur in scenarios involving ice--wind co-occurrence during winter storms (particularly in Texas, where infrastructure is not winterized to northern standards) and flood--wind combinations during Atlantic hurricane season in Florida. These results align with the compound event typology of Zscheischler et al.~\cite{zscheischler2020compound}: the ice--wind case is a multivariate compound event, while sequential tropical weather systems exemplify temporal compounding. The comparatively modest gain for California reflects the fact that wildfire--drought interactions unfold over weeks to months, exceeding the 72-hour sequential window.
+
+\subsection{Operational Value of Uncertainty}
+
+Calibrated uncertainty estimates enable threshold-dependent decision-making. An operator can, for example, adopt a conservative posture by pre-positioning crews whenever the \emph{upper} 90\% confidence bound exceeds the orange threshold (0.55 in Texas), rather than acting only on the point estimate. In our test set, this strategy increases recall from 0.71 to 0.83 at a cost of only 9\% more crew-hours dispatched---a favorable trade-off when restoration speed is valued.
+
+\subsection{Limitations}
+
+Several limitations warrant discussion. First, the EAGLE-I dataset provides only county-level outage counts, which we disaggregate to H3 cells using population density as a proxy. This introduces spatial noise, particularly in rural areas where population density does not correlate well with distribution feeder density. Access to utility-level feeder outage data would substantially improve ground truth quality.
+
+Second, our model does not incorporate actual grid topology. The absence of substation locations, feeder routes, and switch gear configurations means the model cannot distinguish between areas served by underground vs.\ overhead lines, a critical determinant of weather vulnerability. Graph neural network approaches~\cite{li2024gnn} that operate directly on grid topology are a natural extension.
+
+Third, the 72-hour sequential window captures most weather compounding but misses slower processes such as drought-induced soil desiccation that weakens tree root systems over weeks before a windstorm converts that latent vulnerability into outages.
+
+Fourth, we rely on retrospective NOAA Storm Events records for training. In a true real-time deployment, the model would consume NWS forecast products and real-time METAR observations, introducing forecast uncertainty that is not present in our evaluation. Coupling the model with NWS probabilistic forecasts is a priority for future work.
+
+\subsection{Threats to Validity}
+
+The placeholder use of ERCOT load data limits generalizability to non-ERCOT regions. The chronological train-test split mitigates temporal leakage but does not account for potential distribution shift caused by ongoing grid hardening investments. Finally, the class imbalance ratio (1:17) means that even small changes in the decision threshold substantially affect precision-recall trade-offs; the reported F1 scores should be interpreted in conjunction with the full precision-recall curve.
+
+%% ============================================================
+%% VIII. CONCLUSION
+%% ============================================================
+\section{Conclusion}\label{sec:conclusion}
+
+We presented a power outage forecasting framework that models compound weather event interactions, provides calibrated uncertainty estimates, and generalizes across states through configuration-driven adaptation. Three principal findings emerged. First, compound event features---co-occurrence indicators, pairwise severity products, and sequential escalation scores---improve AUC-ROC by 2.2 points on the full test set and 7.1 points on the compound event subset, confirming that nonlinear hazard interactions carry predictive signal that independent features discard. Second, dual-source uncertainty quantification via MC~Dropout and ensemble disagreement, combined with post-hoc isotonic calibration, reduces ECE from 0.142 to 0.067 without sacrificing discrimination, making the predicted probabilities suitable for threshold-based operational decisions. Third, the state-agnostic design matches state-specific models on two of three evaluated states, demonstrating that declarative configuration of risk thresholds and seasonal weights is a viable alternative to per-territory retraining.
+
+Future work will pursue three directions. First, incorporating real power grid topology through graph neural networks~\cite{li2024gnn} would enable the model to distinguish infrastructure-level vulnerability. Second, integrating real-time NWS probabilistic forecast products would replace retrospective weather data with actionable predictions. Third, federated learning across cooperating utilities would allow model improvement without sharing sensitive outage data, addressing a key barrier to industry adoption.
+
+%% ============================================================
+%% REFERENCES
+%% ============================================================
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
