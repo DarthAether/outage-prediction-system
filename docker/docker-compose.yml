@@ -10,8 +10,8 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: outage_prediction
-      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: ${DB_NAME:-outage_prediction}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       POSTGRES_MULTIPLE_DATABASES: mlflow
     volumes:
       - ./init-db:/docker-entrypoint-initdb.d:ro
@@ -48,7 +48,7 @@ services:
       - "5000:5000"
     command: >
       mlflow server
-        --backend-store-uri postgresql://postgres:devpassword@db:5432/mlflow
+        --backend-store-uri postgresql://postgres:${DB_PASSWORD:?Set DB_PASSWORD in .env}@db:5432/mlflow
         --default-artifact-root /mlflow/artifacts
         --host 0.0.0.0
     volumes:
@@ -68,7 +68,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:devpassword@db:5432/outage_prediction
+      DATABASE_URL: postgresql+asyncpg://postgres:${DB_PASSWORD:?Set DB_PASSWORD in .env}@db:5432/outage_prediction
       REDIS_URL: redis://redis:6379/0
       MLFLOW_TRACKING_URI: http://mlflow:5000
       LOG_LEVEL: info
@@ -92,7 +92,7 @@ services:
     restart: unless-stopped
     entrypoint: ["python", "-m", "src.services.batch_service"]
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:devpassword@db:5432/outage_prediction
+      DATABASE_URL: postgresql+asyncpg://postgres:${DB_PASSWORD:?Set DB_PASSWORD in .env}@db:5432/outage_prediction
       REDIS_URL: redis://redis:6379/0
       MLFLOW_TRACKING_URI: http://mlflow:5000
       LOG_LEVEL: info

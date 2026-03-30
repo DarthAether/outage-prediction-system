@@ -1,7 +1,9 @@
-FROM python:3.11-slim AS base
+# ============================================================================
+# Stage 1: Builder — install dependencies in an isolated layer
+# ============================================================================
+FROM python:3.11-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -11,20 +13,52 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libgdal-dev \
         libgeos-dev \
         libproj-dev \
-        curl \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /build
 
 COPY pyproject.toml README.md ./
 COPY backend/ backend/
 COPY config/ config/
 
 RUN pip install --upgrade pip setuptools wheel \
-    && pip install ".[ml]"
+    && pip install --prefix=/install ".[ml]"
+
+# ============================================================================
+# Stage 2: Runtime — lean image with only what's needed
+# ============================================================================
+FROM python:3.11-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpq5 \
+        gdal-bin \
+        libgeos3.12.1 \
+        libproj25 \
+        curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 1000 app \
+    && useradd --uid 1000 --gid app --shell /bin/bash --create-home app
+
+COPY --from=builder /install /usr/local
+
+WORKDIR /app
+
+COPY backend/src/ backend/src/
+COPY backend/alembic/ backend/alembic/
+COPY backend/alembic.ini backend/
+COPY config/ config/
+
+RUN chown -R app:app /app
+USER app
 
 ENV PYTHONPATH=/app/backend
 
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/api/v1/health || exit 1
 
 CMD ["uvicorn", "src.api.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

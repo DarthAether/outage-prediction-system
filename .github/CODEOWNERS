@@ -1,0 +1,13 @@
+# Default owners for everything
+* @DarthAether
+
+# Backend / ML
+/backend/ @DarthAether
+/config/ @DarthAether
+
+# Frontend
+/frontend/ @DarthAether
+
+# Infrastructure
+/docker/ @DarthAether
+/.github/ @DarthAether
