@@ -1,9 +1,2 @@
-streamlit>=1.30
-plotly>=5.18
-pandas>=2.2
-numpy>=1.26
-scikit-learn>=1.4
-xgboost>=2.0
-lightgbm>=4.3
-h3>=4.0
-structlog>=24.1
+fastapi>=0.110
+uvicorn[standard]>=0.29
