@@ -20,17 +20,15 @@ env/
 *.swp
 *.swo
 
-# Data (downloaded by scripts)
+# Data
 data/raw/
-data/processed/
 !data/raw/.gitkeep
-!data/processed/.gitkeep
+# Processed data is tracked (1.4MB) for Streamlit Cloud
 
 # ML artifacts
 mlruns/
 mlflow-artifacts/
-*.pkl
-*.joblib
+# models/ dir is tracked (229KB) for Streamlit Cloud
 *.pt
 *.pth
 *.onnx
