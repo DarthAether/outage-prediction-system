@@ -22,7 +22,7 @@ dependencies = [
     "geoalchemy2>=0.14",
     # Spatial
     "h3>=4.0",
-    "shapely>=2.0",
+    "shapely>=2.1.2",
     # Streaming
     "redis>=5.0",
     # Config
