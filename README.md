@@ -1,10 +1,24 @@
-# Compound Weather Event Interaction Modeling for State-Agnostic Power Outage Prediction
+# State Agnostic Power Outage Prediction System
 
-A machine learning framework for predicting weather-induced power outages using compound event interaction features, calibrated uncertainty estimation, and state-agnostic deployment. Built with XGBoost, LightGBM, H3 spatial indexing, and FastAPI.
+A production oriented machine learning platform for forecasting weather induced power outages using compound weather event modeling, calibrated uncertainty estimation, and state agnostic deployment.
 
-**Paper:** Submitted to IEEE SPICES 2026 (Paper ID: 822)
+Unlike traditional research projects that stop at model training, this project was engineered as an end to end system with reproducible data pipelines, automated testing, backend APIs, an interactive frontend, experiment tracking, and containerized deployment.
 
----
+## Why this project exists
+
+Power outage prediction models are often built for a single geographic region and struggle when deployed elsewhere because they learn region specific weather patterns instead of more general relationships.
+
+This project explores whether modeling interactions between multiple weather events combined with calibrated uncertainty estimation can improve cross state generalization while remaining practical to deploy as a production system.
+
+## Highlights
+
+| Feature | Description |
+|---------|-------------|
+| Compound Weather Modeling | Models interactions between multiple weather events instead of treating them independently. |
+| State Agnostic Design | Region specific configuration allows deployment across different states without changing model code. |
+| Calibrated Predictions | Isotonic calibration improves confidence estimates for operational use. |
+| Production Architecture | FastAPI backend, Next.js dashboard, Redis, TimescaleDB, Docker, MLflow. |
+| Automated Testing | Unit and integration tests validate the complete prediction pipeline. |
 
 ## Results
 
@@ -20,31 +34,51 @@ A machine learning framework for predicting weather-induced power outages using 
 | Features | 138 |
 | Tests | 57/57 passing |
 
-## Architecture
+## System Architecture
 
+```text
+                NOAA Storm Events
+                       │
+                       ▼
+              Data Processing Pipeline
+                       │
+                       ▼
+                 Feature Engineering
+       ┌──────────┬──────────┬──────────┐
+       │          │          │
+ Temporal     Spatial    Compound Events
+ Features     Features      Features
+       └──────────┴──────────┴──────────┘
+                       │
+                       ▼
+            XGBoost + LightGBM Ensemble
+                       │
+                       ▼
+            Isotonic Calibration Layer
+                       │
+                       ▼
+          FastAPI Prediction Service
+                       │
+                       ▼
+          Next.js Interactive Dashboard
 ```
-NOAA Storm Events ──> [Data Pipeline] ──> [Feature Store]
-                                               |
-                          ┌────────────────────┼────────────────────┐
-                          v                    v                    v
-                   [Temporal 48d]      [Compound 71d]       [Spatial 13d]
-                          |                    |                    |
-                          └────────────────────┼────────────────────┘
-                                               v
-                                    [XGBoost + LightGBM]
-                                               |
-                                    [Isotonic Calibration]
-                                               |
-                               [FastAPI + Next.js Dashboard]
-```
+## Engineering Decisions
 
-## Key Contributions
+### Compound Weather Event Modeling
 
-1. **Compound Weather Event Features** -- Co-occurrence matrices, pairwise severity interaction terms, and sequential escalation scores across 6 weather categories (wind, ice, heat, flood, drought, fire). The composite severity index ranks 18th among 138 features.
+Instead of treating weather events independently, the system models their interactions through co occurrence matrices, sequential escalation scores, and pairwise severity relationships across six weather categories.
 
-2. **Calibrated Uncertainty** -- Ensemble disagreement between XGBoost and LightGBM with post-hoc isotonic calibration reduces ECE from 0.267 to 0.004 (98.4% reduction).
+### Confidence Calibration
 
-3. **State-Agnostic Design** -- Region-specific thresholds and hazard profiles encoded in YAML config files. A Texas-trained model generalizes to California and Florida with AUC gaps of only 0.002-0.007.
+Raw model probabilities are calibrated using isotonic regression to improve confidence estimates for operational decision making. Calibration reduced Expected Calibration Error from 0.267 to 0.004.
+
+### State Agnostic Configuration
+
+Regional thresholds and hazard profiles are separated into configuration files, allowing deployment across multiple states without modifying the prediction pipeline.
+
+### Production First Design
+
+Training, inference, testing, deployment, and experiment tracking were designed as independent components rather than notebook based workflows, making the system easier to maintain and extend.
 
 ## Quick Start
 
