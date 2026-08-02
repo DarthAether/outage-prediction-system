@@ -183,7 +183,7 @@ Some of the most valuable lessons from this project were:
 - Confidence calibration is as important as prediction accuracy for operational systems.
 - Automated testing significantly reduced regression risk while iterating on feature engineering.
 
-  ## Future Work
+## Future Work
 
 - Real time weather ingestion
 - Online model retraining
