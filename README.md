@@ -1,4 +1,4 @@
-# State Agnostic Power Outage Prediction System
+# State Agnostic Power Outage Prediction Platform
 
 A production oriented machine learning platform for forecasting weather induced power outages using compound weather event modeling, calibrated uncertainty estimation, and state agnostic deployment.
 
