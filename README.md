@@ -20,6 +20,17 @@ This project explores whether modeling interactions between multiple weather eve
 | Production Architecture | FastAPI backend, Next.js dashboard, Redis, TimescaleDB, Docker, MLflow. |
 | Automated Testing | Unit and integration tests validate the complete prediction pipeline. |
 
+## At a Glance
+
+| Category | Details |
+|----------|---------|
+| Problem | Predict weather induced power outages across multiple states |
+| Architecture | FastAPI, Next.js, Redis, TimescaleDB, Docker, MLflow |
+| Machine Learning | XGBoost, LightGBM ensemble with calibrated uncertainty |
+| Deployment | Containerized services with reproducible pipelines |
+| Testing | 57 automated tests covering unit and integration scenarios |
+| Best Result | AUC ROC 0.967 |
+
 ## Results
 
 | Metric | Value |
@@ -62,7 +73,7 @@ This project explores whether modeling interactions between multiple weather eve
                        ▼
           Next.js Interactive Dashboard
 ```
-## Engineering Decisions
+## Design Decisions
 
 ### Compound Weather Event Modeling
 
@@ -140,17 +151,16 @@ outage-prediction-system/
 └── data/processed/       # Training datasets (TX, CA, FL)
 ```
 
-## Tech Stack
+## Engineering Stack
 
 | Layer | Technology |
-|-------|-----------|
-| ML Models | XGBoost, LightGBM, scikit-learn |
-| Features | H3-py (hexagonal spatial indexing), pandas, NumPy |
-| Explainability | SHAP (TreeExplainer) |
+|------|------------|
 | Backend | FastAPI, SQLAlchemy, TimescaleDB |
-| Frontend | Next.js 14, TypeScript, Recharts |
+| Frontend | Next.js, TypeScript, Recharts |
+| Machine Learning | XGBoost, LightGBM, SHAP |
 | Infrastructure | Docker Compose, Redis, MLflow |
-| Calibration | Isotonic regression (scikit-learn) |
+| Data Processing | pandas, NumPy, H3 |
+| Testing | Pytest |
 
 ## Cross-State Generalization
 
@@ -159,6 +169,27 @@ outage-prediction-system/
 | Texas | 0.980 | -- | -- |
 | California | 0.904 | 0.907 | 0.002 |
 | Florida | 0.971 | 0.973 | 0.002 |
+
+## Lessons Learned
+
+Building the machine learning model was only one part of the project.
+
+The larger engineering challenge was creating a system that was reproducible, testable, and maintainable from data ingestion through deployment.
+
+Some of the most valuable lessons from this project were:
+
+- Separating feature engineering from model training improved reproducibility.
+- Configuration driven regional behavior made cross state deployment much simpler.
+- Confidence calibration is as important as prediction accuracy for operational systems.
+- Automated testing significantly reduced regression risk while iterating on feature engineering.
+
+  ## Future Work
+
+- Real time weather ingestion
+- Online model retraining
+- Kubernetes based deployment
+- Model monitoring and drift detection
+- Support for additional geographic regions
 
 ## Authors
 
