@@ -6,9 +6,9 @@ Uses asyncio for concurrent execution of independent data sources.
 """
 
 import asyncio
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Callable
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -48,6 +48,7 @@ DEFAULT_SCHEDULE: dict[str, dict] = {
 @dataclass
 class ScheduleEntry:
     """Tracks the schedule state for a single data source."""
+
     source_name: str
     interval_minutes: int
     last_run: datetime | None = None
@@ -125,7 +126,9 @@ class IngestionScheduler:
         if source in ("noaa_storms", "eagle_i", "ercot", "eia"):
             kwargs.setdefault("data_dir", self.data_dir)
         if source in ("nws_alerts", "metar"):
-            kwargs.setdefault("target_states", [self.default_region] if self.default_region else ["TX"])
+            kwargs.setdefault(
+                "target_states", [self.default_region] if self.default_region else ["TX"]
+            )
 
         return factory(**kwargs)
 
@@ -255,10 +258,7 @@ class IngestionScheduler:
         region = region_code or self.default_region
         results: dict[str, IngestionResult] = {}
 
-        due_sources = [
-            name for name, entry in self._schedules.items()
-            if entry.is_due
-        ]
+        due_sources = [name for name, entry in self._schedules.items() if entry.is_due]
 
         if not due_sources:
             logger.info("scheduler.no_sources_due")
@@ -348,9 +348,7 @@ class IngestionScheduler:
                 "last_run": str(entry.last_run) if entry.last_run else None,
                 "next_run": str(entry.next_run) if entry.next_run else None,
                 "consecutive_failures": entry.consecutive_failures,
-                "last_success": (
-                    entry.last_result.success if entry.last_result else None
-                ),
+                "last_success": (entry.last_result.success if entry.last_result else None),
                 "last_records_loaded": (
                     entry.last_result.records_loaded if entry.last_result else None
                 ),

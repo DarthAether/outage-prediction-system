@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Query
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, select
 
-from backend.src.api.dependencies import DBSession
-from backend.src.db.models import (
+from src.api.dependencies import DBSession
+from src.db.models import (
     ModelRegistryEntry,
     OutageObservation,
-    Prediction,
     WeatherEvent,
 )
 
@@ -27,7 +25,7 @@ async def historical_outages(
     limit: int = Query(default=500, ge=1, le=10_000),
 ) -> list[dict]:
     """Return historical outage observations aggregated by county and time."""
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     start = start_time or (now - timedelta(days=30))
     end = end_time or now
 
@@ -74,7 +72,7 @@ async def historical_weather(
     limit: int = Query(default=500, ge=1, le=10_000),
 ) -> list[dict]:
     """Return historical weather events filtered by region and type."""
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     start = start_time or (now - timedelta(days=30))
     end = end_time or now
 

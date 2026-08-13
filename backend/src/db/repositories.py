@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Sequence
 
 from sqlalchemy import and_, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.db.models import Alert, OutageObservation, Prediction, WeatherEvent
+from src.db.models import Alert, OutageObservation, Prediction, WeatherEvent
 
 
 class WeatherEventRepository:
@@ -53,11 +53,7 @@ class WeatherEventRepository:
         end: datetime,
         resolution: int = 7,
     ) -> Sequence[WeatherEvent]:
-        col = (
-            WeatherEvent.h3_index_res7
-            if resolution == 7
-            else WeatherEvent.h3_index_res9
-        )
+        col = WeatherEvent.h3_index_res7 if resolution == 7 else WeatherEvent.h3_index_res9
         stmt = (
             select(WeatherEvent)
             .where(
@@ -213,11 +209,7 @@ class AlertRepository:
             conditions.append(Alert.region_code == region_code)
         if severity is not None:
             conditions.append(Alert.severity == severity)
-        stmt = (
-            select(Alert)
-            .where(and_(*conditions))
-            .order_by(Alert.created_at.desc())
-        )
+        stmt = select(Alert).where(and_(*conditions)).order_by(Alert.created_at.desc())
         result = await self._session.execute(stmt)
         return result.scalars().all()
 

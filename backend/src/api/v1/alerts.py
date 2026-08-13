@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import json
 
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
-from backend.src.api.dependencies import AlertDep, DBSession
-from backend.src.api.schemas.alerts import AlertAcknowledge, AlertResponse
-from backend.src.db.repositories import AlertRepository
+from src.api.dependencies import AlertDep
+from src.api.schemas.alerts import AlertAcknowledge, AlertResponse
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 

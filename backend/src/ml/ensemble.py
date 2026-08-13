@@ -113,12 +113,10 @@ class OutageEnsemble:
         member_preds = self._get_member_predictions(X_tabular, X_sequential)
         pred_matrix = np.column_stack(list(member_preds.values()))
 
-        self.meta_learner = LogisticRegression(
-            C=1.0, max_iter=1000, random_state=42
-        )
+        self.meta_learner = LogisticRegression(C=1.0, max_iter=1000, random_state=42)
         self.meta_learner.fit(pred_matrix, y_val)
 
-        stacking_coefs = dict(zip(member_preds.keys(), self.meta_learner.coef_[0]))
+        stacking_coefs = dict(zip(member_preds.keys(), self.meta_learner.coef_[0], strict=True))
         logger.info("ensemble.stacking_fitted", coefficients=stacking_coefs)
 
         return self

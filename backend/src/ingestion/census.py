@@ -34,28 +34,55 @@ ACS_VARIABLES = {
 }
 
 STATE_FIPS_MAP: dict[str, str] = {
-    "TX": "48", "CA": "06", "FL": "12", "NY": "36",
-    "PA": "42", "OH": "39", "IL": "17", "GA": "13",
-    "NC": "37", "MI": "26", "NJ": "34", "VA": "51",
-    "LA": "22", "WA": "53", "OR": "41", "CO": "08",
-    "AZ": "04", "MA": "25", "TN": "47", "IN": "18",
-    "MO": "29", "MD": "24", "WI": "55", "MN": "27",
-    "SC": "45", "AL": "01", "KY": "21", "OK": "40",
-    "CT": "09", "IA": "19", "MS": "28", "AR": "05",
-    "KS": "20", "NV": "32", "NE": "31", "NM": "35",
+    "TX": "48",
+    "CA": "06",
+    "FL": "12",
+    "NY": "36",
+    "PA": "42",
+    "OH": "39",
+    "IL": "17",
+    "GA": "13",
+    "NC": "37",
+    "MI": "26",
+    "NJ": "34",
+    "VA": "51",
+    "LA": "22",
+    "WA": "53",
+    "OR": "41",
+    "CO": "08",
+    "AZ": "04",
+    "MA": "25",
+    "TN": "47",
+    "IN": "18",
+    "MO": "29",
+    "MD": "24",
+    "WI": "55",
+    "MN": "27",
+    "SC": "45",
+    "AL": "01",
+    "KY": "21",
+    "OK": "40",
+    "CT": "09",
+    "IA": "19",
+    "MS": "28",
+    "AR": "05",
+    "KS": "20",
+    "NV": "32",
+    "NE": "31",
+    "NM": "35",
 }
 
 COUNTY_AREA_SQ_MI: dict[str, float] = {
     "48201": 1777.0,  # Harris
-    "48113": 880.0,   # Dallas
+    "48113": 880.0,  # Dallas
     "48029": 1247.0,  # Bexar
     "48439": 1023.0,  # Travis
-    "48141": 863.0,   # Tarrant
+    "48141": 863.0,  # Tarrant
     "06037": 4751.0,  # Los Angeles
     "06073": 4526.0,  # San Diego
-    "06059": 948.0,   # Orange
+    "06059": 948.0,  # Orange
     "06065": 7303.0,  # Riverside
-    "06071": 20105.0, # San Bernardino
+    "06071": 20105.0,  # San Bernardino
     "12086": 2431.0,  # Miami-Dade
     "12011": 1320.0,  # Broward
     "12099": 2383.0,  # Palm Beach
@@ -64,13 +91,20 @@ COUNTY_AREA_SQ_MI: dict[str, float] = {
 }
 
 COUNTY_CENTROIDS: dict[str, tuple[float, float]] = {
-    "48201": (29.76, -95.37), "48113": (32.78, -96.80),
-    "48029": (29.42, -98.49), "48439": (30.27, -97.74),
-    "48141": (32.76, -97.33), "06037": (34.05, -118.24),
-    "06073": (32.72, -117.16), "06059": (33.72, -117.83),
-    "06065": (33.95, -117.40), "06071": (34.96, -116.42),
-    "12086": (25.76, -80.19), "12011": (26.12, -80.14),
-    "12099": (26.72, -80.05), "12057": (28.54, -81.38),
+    "48201": (29.76, -95.37),
+    "48113": (32.78, -96.80),
+    "48029": (29.42, -98.49),
+    "48439": (30.27, -97.74),
+    "48141": (32.76, -97.33),
+    "06037": (34.05, -118.24),
+    "06073": (32.72, -117.16),
+    "06059": (33.72, -117.83),
+    "06065": (33.95, -117.40),
+    "06071": (34.96, -116.42),
+    "12086": (25.76, -80.19),
+    "12011": (26.12, -80.14),
+    "12099": (26.72, -80.05),
+    "12057": (28.54, -81.38),
     "12095": (28.54, -81.38),
 }
 
@@ -128,7 +162,7 @@ class CensusIngestor(BaseIngestor):
 
                     headers = data[0]
                     for row_data in data[1:]:
-                        row_dict = dict(zip(headers, row_data))
+                        row_dict = dict(zip(headers, row_data, strict=True))
                         row_dict["state_code"] = state_code
                         all_rows.append(row_dict)
 
@@ -173,25 +207,29 @@ class CensusIngestor(BaseIngestor):
         if "total_population" not in df.columns:
             errors.append("Missing total_population column")
             return df.head(0), ValidationResult(
-                valid=False, total_records=total,
-                valid_records=0, invalid_records=total, errors=errors,
+                valid=False,
+                total_records=total,
+                valid_records=0,
+                invalid_records=total,
+                errors=errors,
             )
 
         numeric_cols = [
-            "total_population", "median_household_income",
-            "median_year_structure_built", "total_housing_units",
-            "vacant_housing_units", "median_gross_rent",
-            "median_age", "population_below_poverty",
+            "total_population",
+            "median_household_income",
+            "median_year_structure_built",
+            "total_housing_units",
+            "vacant_housing_units",
+            "median_gross_rent",
+            "median_age",
+            "population_below_poverty",
         ]
 
         for col in numeric_cols:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors="coerce")
 
-        valid_mask = (
-            df["total_population"].notna()
-            & (df["total_population"] > 0)
-        )
+        valid_mask = df["total_population"].notna() & (df["total_population"] > 0)
 
         if "median_household_income" in df.columns:
             income_valid = df["median_household_income"].notna() & (
@@ -210,9 +248,7 @@ class CensusIngestor(BaseIngestor):
             > df["total_population"]
         )
         if neg_pop.sum() > 0:
-            warnings.append(
-                f"{neg_pop.sum()} counties with poverty population > total population"
-            )
+            warnings.append(f"{neg_pop.sum()} counties with poverty population > total population")
 
         clean_df = df[valid_mask].copy()
         invalid_count = total - len(clean_df)
@@ -239,11 +275,13 @@ class CensusIngestor(BaseIngestor):
 
         result["population_density"] = df["county_fips"].apply(
             lambda fips: (
-                df.loc[df["county_fips"] == fips, "total_population"].iloc[0]
-                / COUNTY_AREA_SQ_MI[fips]
+                (
+                    df.loc[df["county_fips"] == fips, "total_population"].iloc[0]
+                    / COUNTY_AREA_SQ_MI[fips]
+                )
+                if fips in COUNTY_AREA_SQ_MI
+                else None
             )
-            if fips in COUNTY_AREA_SQ_MI
-            else None
         )
 
         result["median_household_income"] = df.get(
@@ -252,21 +290,18 @@ class CensusIngestor(BaseIngestor):
         result["median_year_structure_built"] = df.get(
             "median_year_structure_built", pd.Series(dtype=float)
         )
-        result["total_housing_units"] = df.get(
-            "total_housing_units", pd.Series(dtype=float)
-        )
-        result["vacant_housing_units"] = df.get(
-            "vacant_housing_units", pd.Series(dtype=float)
-        )
-        result["median_gross_rent"] = df.get(
-            "median_gross_rent", pd.Series(dtype=float)
-        )
+        result["total_housing_units"] = df.get("total_housing_units", pd.Series(dtype=float))
+        result["vacant_housing_units"] = df.get("vacant_housing_units", pd.Series(dtype=float))
+        result["median_gross_rent"] = df.get("median_gross_rent", pd.Series(dtype=float))
         result["median_age"] = df.get("median_age", pd.Series(dtype=float))
         result["population_below_poverty"] = df.get(
             "population_below_poverty", pd.Series(dtype=float)
         )
 
-        if result["total_population"].notna().any() and result["population_below_poverty"].notna().any():
+        if (
+            result["total_population"].notna().any()
+            and result["population_below_poverty"].notna().any()
+        ):
             result["poverty_rate"] = (
                 result["population_below_poverty"] / result["total_population"]
             ).round(6)
@@ -274,13 +309,16 @@ class CensusIngestor(BaseIngestor):
             result["poverty_rate"] = None
 
         if result["median_year_structure_built"].notna().any():
-            result["avg_housing_age_years"] = (
-                2020 - result["median_year_structure_built"]
-            ).clip(lower=0)
+            result["avg_housing_age_years"] = (2020 - result["median_year_structure_built"]).clip(
+                lower=0
+            )
         else:
             result["avg_housing_age_years"] = None
 
-        if result["total_housing_units"].notna().any() and result["vacant_housing_units"].notna().any():
+        if (
+            result["total_housing_units"].notna().any()
+            and result["vacant_housing_units"].notna().any()
+        ):
             result["vacancy_rate"] = (
                 result["vacant_housing_units"] / result["total_housing_units"]
             ).round(6)
@@ -311,51 +349,47 @@ class CensusIngestor(BaseIngestor):
 
         records: list[dict] = []
         for _, row in df.iterrows():
-            records.append({
-                "county_fips": row["county_fips"],
-                "state_fips": row["state_fips"],
-                "county_name": str(row.get("county_name", "")),
-                "state_code": str(row.get("state_code", "")),
-                "total_population": int(row["total_population"]),
-                "population_density": (
-                    float(row["population_density"])
-                    if pd.notna(row.get("population_density"))
-                    else None
-                ),
-                "median_household_income": (
-                    float(row["median_household_income"])
-                    if pd.notna(row.get("median_household_income"))
-                    else None
-                ),
-                "median_year_structure_built": (
-                    int(row["median_year_structure_built"])
-                    if pd.notna(row.get("median_year_structure_built"))
-                    else None
-                ),
-                "avg_housing_age_years": (
-                    float(row["avg_housing_age_years"])
-                    if pd.notna(row.get("avg_housing_age_years"))
-                    else None
-                ),
-                "poverty_rate": (
-                    float(row["poverty_rate"])
-                    if pd.notna(row.get("poverty_rate"))
-                    else None
-                ),
-                "vacancy_rate": (
-                    float(row["vacancy_rate"])
-                    if pd.notna(row.get("vacancy_rate"))
-                    else None
-                ),
-                "median_age": (
-                    float(row["median_age"])
-                    if pd.notna(row.get("median_age"))
-                    else None
-                ),
-                "h3_index_res7": row.get("h3_index_res7"),
-                "source": row["source"],
-                "data_year": int(row.get("data_year", 2020)),
-            })
+            records.append(
+                {
+                    "county_fips": row["county_fips"],
+                    "state_fips": row["state_fips"],
+                    "county_name": str(row.get("county_name", "")),
+                    "state_code": str(row.get("state_code", "")),
+                    "total_population": int(row["total_population"]),
+                    "population_density": (
+                        float(row["population_density"])
+                        if pd.notna(row.get("population_density"))
+                        else None
+                    ),
+                    "median_household_income": (
+                        float(row["median_household_income"])
+                        if pd.notna(row.get("median_household_income"))
+                        else None
+                    ),
+                    "median_year_structure_built": (
+                        int(row["median_year_structure_built"])
+                        if pd.notna(row.get("median_year_structure_built"))
+                        else None
+                    ),
+                    "avg_housing_age_years": (
+                        float(row["avg_housing_age_years"])
+                        if pd.notna(row.get("avg_housing_age_years"))
+                        else None
+                    ),
+                    "poverty_rate": (
+                        float(row["poverty_rate"]) if pd.notna(row.get("poverty_rate")) else None
+                    ),
+                    "vacancy_rate": (
+                        float(row["vacancy_rate"]) if pd.notna(row.get("vacancy_rate")) else None
+                    ),
+                    "median_age": (
+                        float(row["median_age"]) if pd.notna(row.get("median_age")) else None
+                    ),
+                    "h3_index_res7": row.get("h3_index_res7"),
+                    "source": row["source"],
+                    "data_year": int(row.get("data_year", 2020)),
+                }
+            )
 
         batch_size = 500
         total_inserted = 0

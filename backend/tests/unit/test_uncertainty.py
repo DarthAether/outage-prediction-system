@@ -1,7 +1,6 @@
 """Tests for uncertainty quantification module."""
 
 import numpy as np
-import pytest
 
 from src.ml.uncertainty import UncertaintyEstimator, UncertaintyPrediction
 
@@ -11,10 +10,12 @@ class TestUncertaintyEstimator:
         self.estimator = UncertaintyEstimator(n_mc_samples=50)
 
     def test_predict_with_ensemble_only(self):
-        ensemble_preds = np.array([
-            [0.3, 0.5, 0.4],
-            [0.8, 0.7, 0.9],
-        ])
+        ensemble_preds = np.array(
+            [
+                [0.3, 0.5, 0.4],
+                [0.8, 0.7, 0.9],
+            ]
+        )
         results = self.estimator.predict_with_uncertainty(ensemble_preds)
 
         assert len(results) == 2
@@ -52,7 +53,7 @@ class TestUncertaintyEstimator:
         extreme_preds = np.array([[0.01, 0.99]])
         results = self.estimator.predict_with_uncertainty(extreme_preds)
 
-        assert 0.0 <= results[0].ci_lower
+        assert results[0].ci_lower >= 0.0
         assert results[0].ci_upper <= 1.0
         assert 0.0 <= results[0].mean <= 1.0
 

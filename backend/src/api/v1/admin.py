@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import and_, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.api.dependencies import DBSession
-from backend.src.db.models import ModelRegistryEntry
+from src.api.dependencies import DBSession
+from src.db.models import ModelRegistryEntry
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -53,7 +52,7 @@ async def update_thresholds(body: ThresholdUpdate, request: Request) -> dict:
     return {
         "region": body.region,
         "thresholds": region_configs[body.region]["risk_thresholds"],
-        "updated_at": datetime.now(tz=timezone.utc).isoformat(),
+        "updated_at": datetime.now(tz=UTC).isoformat(),
     }
 
 
@@ -85,7 +84,7 @@ async def promote_model(
                 ModelRegistryEntry.version == body.version,
             )
         )
-        .values(is_active=True, promoted_at=datetime.now(tz=timezone.utc))
+        .values(is_active=True, promoted_at=datetime.now(tz=UTC))
         .returning(ModelRegistryEntry.id)
     )
     promoted = result.scalar_one_or_none()
@@ -99,7 +98,7 @@ async def promote_model(
         "model_name": body.model_name,
         "version": body.version,
         "region": body.region,
-        "promoted_at": datetime.now(tz=timezone.utc).isoformat(),
+        "promoted_at": datetime.now(tz=UTC).isoformat(),
     }
 
 

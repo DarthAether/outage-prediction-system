@@ -9,7 +9,6 @@ from datetime import date
 from pathlib import Path
 
 import h3
-import numpy as np
 import pandas as pd
 import structlog
 from sqlalchemy import text
@@ -21,22 +20,21 @@ logger = structlog.get_logger(__name__)
 
 COUNTY_CENTROIDS: dict[str, tuple[float, float]] = {
     # Texas counties (state FIPS 48)
-    "48201": (29.7604, -95.3698),   # Harris (Houston)
-    "48113": (32.7767, -96.7970),   # Dallas
-    "48029": (29.4241, -98.4936),   # Bexar (San Antonio)
-    "48439": (30.2672, -97.7431),   # Travis (Austin)
-    "48141": (32.7555, -97.3308),   # Tarrant (Fort Worth)
-    "48085": (33.0198, -96.6989),   # Collin
-    "48157": (26.2034, -98.2300),   # Hidalgo
+    "48201": (29.7604, -95.3698),  # Harris (Houston)
+    "48113": (32.7767, -96.7970),  # Dallas
+    "48029": (29.4241, -98.4936),  # Bexar (San Antonio)
+    "48439": (30.2672, -97.7431),  # Travis (Austin)
+    "48141": (32.7555, -97.3308),  # Tarrant (Fort Worth)
+    "48085": (33.0198, -96.6989),  # Collin
+    "48157": (26.2034, -98.2300),  # Hidalgo
     "48215": (31.7619, -106.4850),  # El Paso
-    "48339": (30.0802, -94.1266),   # Montgomery
-    "48167": (29.3013, -94.7977),   # Galveston
-    "48121": (33.1972, -96.6150),   # Denton
-    "48453": (30.2672, -97.7431),   # Travis
-    "48245": (32.3513, -95.3010),   # Jefferson
-    "48491": (33.9137, -98.5264),   # Williamson
-    "48303": (32.4487, -99.7331),   # Lubbock
-
+    "48339": (30.0802, -94.1266),  # Montgomery
+    "48167": (29.3013, -94.7977),  # Galveston
+    "48121": (33.1972, -96.6150),  # Denton
+    "48453": (30.2672, -97.7431),  # Travis
+    "48245": (32.3513, -95.3010),  # Jefferson
+    "48491": (33.9137, -98.5264),  # Williamson
+    "48303": (32.4487, -99.7331),  # Lubbock
     # California counties (state FIPS 06)
     "06037": (34.0522, -118.2437),  # Los Angeles
     "06073": (32.7157, -117.1611),  # San Diego
@@ -50,20 +48,19 @@ COUNTY_CENTROIDS: dict[str, tuple[float, float]] = {
     "06067": (38.5816, -121.4944),  # Sacramento
     "06081": (37.4323, -122.3232),  # San Mateo
     "06029": (35.3733, -119.0187),  # Kern
-
     # Florida counties (state FIPS 12)
-    "12086": (25.7617, -80.1918),   # Miami-Dade
-    "12011": (26.1224, -80.1373),   # Broward
-    "12099": (26.7153, -80.0534),   # Palm Beach
-    "12057": (28.5383, -81.3792),   # Hillsborough (Tampa)
-    "12095": (28.5383, -81.3792),   # Orange (Orlando)
-    "12031": (30.3322, -81.6557),   # Duval (Jacksonville)
-    "12103": (27.3364, -82.5307),   # Pinellas
-    "12071": (26.1420, -81.7948),   # Lee
-    "12009": (28.0222, -80.6250),   # Brevard
-    "12117": (27.4467, -82.3453),   # Seminole
-    "12105": (28.2920, -81.4076),   # Polk
-    "12115": (27.3364, -82.5307),   # Sarasota
+    "12086": (25.7617, -80.1918),  # Miami-Dade
+    "12011": (26.1224, -80.1373),  # Broward
+    "12099": (26.7153, -80.0534),  # Palm Beach
+    "12057": (28.5383, -81.3792),  # Hillsborough (Tampa)
+    "12095": (28.5383, -81.3792),  # Orange (Orlando)
+    "12031": (30.3322, -81.6557),  # Duval (Jacksonville)
+    "12103": (27.3364, -82.5307),  # Pinellas
+    "12071": (26.1420, -81.7948),  # Lee
+    "12009": (28.0222, -80.6250),  # Brevard
+    "12117": (27.4467, -82.3453),  # Seminole
+    "12105": (28.2920, -81.4076),  # Polk
+    "12115": (27.3364, -82.5307),  # Sarasota
 }
 
 
@@ -126,18 +123,28 @@ class EagleIIngestor(BaseIngestor):
 
         if ts_col:
             combined[ts_col] = pd.to_datetime(combined[ts_col], format="mixed", errors="coerce")
-            mask = (combined[ts_col].dt.date >= start_date) & (
-                combined[ts_col].dt.date <= end_date
-            )
+            mask = (combined[ts_col].dt.date >= start_date) & (combined[ts_col].dt.date <= end_date)
             combined = combined.loc[mask]
             combined.rename(columns={ts_col: "timestamp"}, inplace=True)
 
         if region_code:
             state_fips_map = {
-                "TX": "48", "CA": "06", "FL": "12", "NY": "36",
-                "PA": "42", "OH": "39", "IL": "17", "GA": "13",
-                "NC": "37", "MI": "26", "NJ": "34", "VA": "51",
-                "LA": "22", "WA": "53", "OR": "41", "CO": "08",
+                "TX": "48",
+                "CA": "06",
+                "FL": "12",
+                "NY": "36",
+                "PA": "42",
+                "OH": "39",
+                "IL": "17",
+                "GA": "13",
+                "NC": "37",
+                "MI": "26",
+                "NJ": "34",
+                "VA": "51",
+                "LA": "22",
+                "WA": "53",
+                "OR": "41",
+                "CO": "08",
             }
             fips = state_fips_map.get(region_code)
             if fips and "state_fips" in combined.columns:
@@ -157,8 +164,11 @@ class EagleIIngestor(BaseIngestor):
             if col not in df.columns:
                 errors.append(f"Missing required column: {col}")
                 return df.head(0), ValidationResult(
-                    valid=False, total_records=total,
-                    valid_records=0, invalid_records=total, errors=errors,
+                    valid=False,
+                    total_records=total,
+                    valid_records=0,
+                    invalid_records=total,
+                    errors=errors,
                 )
 
         df["county_fips"] = df["county_fips"].astype(str).str.zfill(5)
@@ -193,9 +203,9 @@ class EagleIIngestor(BaseIngestor):
             )
 
         clean_df = df[valid_mask].copy()
-        clean_df.loc[
-            clean_df["customers_out"] > clean_df["total_customers"], "customers_out"
-        ] = clean_df["total_customers"]
+        clean_df.loc[clean_df["customers_out"] > clean_df["total_customers"], "customers_out"] = (
+            clean_df["total_customers"]
+        )
 
         invalid_count = total - len(clean_df)
         return clean_df, ValidationResult(
@@ -256,19 +266,21 @@ class EagleIIngestor(BaseIngestor):
 
         records: list[dict] = []
         for _, row in df.iterrows():
-            records.append({
-                "timestamp": row["timestamp"],
-                "county_fips": row["county_fips"],
-                "state_fips": row["state_fips"],
-                "customers_out": int(row["customers_out"]),
-                "total_customers": int(row["total_customers"]),
-                "outage_fraction": float(row["outage_fraction"]),
-                "lat": float(row["lat"]) if pd.notna(row["lat"]) else None,
-                "lon": float(row["lon"]) if pd.notna(row["lon"]) else None,
-                "h3_index_res7": row.get("h3_index_res7"),
-                "h3_index_res9": row.get("h3_index_res9"),
-                "source": row["source"],
-            })
+            records.append(
+                {
+                    "timestamp": row["timestamp"],
+                    "county_fips": row["county_fips"],
+                    "state_fips": row["state_fips"],
+                    "customers_out": int(row["customers_out"]),
+                    "total_customers": int(row["total_customers"]),
+                    "outage_fraction": float(row["outage_fraction"]),
+                    "lat": float(row["lat"]) if pd.notna(row["lat"]) else None,
+                    "lon": float(row["lon"]) if pd.notna(row["lon"]) else None,
+                    "h3_index_res7": row.get("h3_index_res7"),
+                    "h3_index_res9": row.get("h3_index_res9"),
+                    "source": row["source"],
+                }
+            )
 
         batch_size = 1000
         total_inserted = 0

@@ -5,15 +5,15 @@ from datetime import datetime
 
 from fastapi import APIRouter, Query
 
-from backend.src.api.dependencies import DBSession, PredictionDep
-from backend.src.api.schemas.predictions import (
+from src.api.dependencies import DBSession, PredictionDep
+from src.api.schemas.predictions import (
     BatchPredictionRequest,
     BatchPredictionResponse,
     PredictionRequest,
     PredictionResult,
 )
-from backend.src.db.models import Prediction
-from backend.src.db.repositories import PredictionRepository
+from src.db.models import Prediction
+from src.db.repositories import PredictionRepository
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
 
@@ -79,7 +79,7 @@ async def prediction_history(
 
 
 def _row_to_result(row: Prediction) -> PredictionResult:
-    from backend.src.api.schemas.predictions import UncertaintyEstimate
+    from src.api.schemas.predictions import UncertaintyEstimate
 
     lower = row.uncertainty_lower or 0.0
     upper = row.uncertainty_upper or 1.0

@@ -67,7 +67,7 @@ class XGBoostOutageModel:
         )
 
         val_pred = self.model.predict_proba(X_val)[:, 1]
-        from sklearn.metrics import roc_auc_score, f1_score
+        from sklearn.metrics import f1_score, roc_auc_score
 
         auc = roc_auc_score(y_val, val_pred)
         f1 = f1_score(y_val, (val_pred >= 0.5).astype(int))
@@ -117,7 +117,8 @@ class XGBoostOutageModel:
 
             fold_model = xgb.XGBClassifier(**self.params)
             fold_model.fit(
-                X_train, y_train,
+                X_train,
+                y_train,
                 eval_set=[(X_val, y_val)],
                 verbose=False,
             )
@@ -179,7 +180,7 @@ class LightGBMOutageModel:
         )
 
         val_pred = self.model.predict_proba(X_val)[:, 1]
-        from sklearn.metrics import roc_auc_score, f1_score
+        from sklearn.metrics import f1_score, roc_auc_score
 
         auc = roc_auc_score(y_val, val_pred)
         f1 = f1_score(y_val, (val_pred >= 0.5).astype(int))
@@ -213,8 +214,8 @@ class LightGBMOutageModel:
         y: np.ndarray,
         n_splits: int = 5,
     ) -> dict:
-        from sklearn.metrics import roc_auc_score
         import lightgbm as lgb
+        from sklearn.metrics import roc_auc_score
 
         tscv = TimeSeriesSplit(n_splits=n_splits)
         fold_metrics = []
@@ -225,7 +226,8 @@ class LightGBMOutageModel:
 
             fold_model = lgb.LGBMClassifier(**self.params)
             fold_model.fit(
-                X_train, y_train,
+                X_train,
+                y_train,
                 eval_set=[(X_val, y_val)],
             )
 

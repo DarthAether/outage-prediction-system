@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import json
-from datetime import datetime, timedelta, timezone
+import contextlib
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.api.schemas.alerts import AlertResponse
-from backend.src.api.schemas.predictions import PredictionResult
-from backend.src.db.repositories import AlertRepository
+from src.api.schemas.alerts import AlertResponse
+from src.api.schemas.predictions import PredictionResult
+from src.db.repositories import AlertRepository
 
 logger = structlog.get_logger(__name__)
 
@@ -77,7 +77,7 @@ class AlertService:
         Only call this when risk_level is YELLOW or above.
         """
         level = prediction.risk_level
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         expiry_hours = ALERT_EXPIRY_HOURS.get(level, 24)
         expires_at = now + timedelta(hours=expiry_hours)
 
@@ -127,9 +127,7 @@ class AlertService:
         region: str | None = None,
         severity: str | None = None,
     ) -> list[AlertResponse]:
-        rows = await self._repo.get_active(
-            region_code=region, severity=severity
-        )
+        rows = await self._repo.get_active(region_code=region, severity=severity)
         return [
             AlertResponse(
                 id=r.id,
@@ -151,6 +149,7 @@ class AlertService:
         row = await self._repo.acknowledge(alert_id, acknowledged_by=by)
         if row is None:
             from fastapi import HTTPException
+
             raise HTTPException(status_code=404, detail=f"Alert {alert_id} not found")
 
         return AlertResponse(
@@ -180,7 +179,5 @@ class AlertService:
         if subscribers is None:
             return
         for queue in list(subscribers):
-            try:
+            with contextlib.suppress(Exception):
                 queue.put_nowait(payload)
-            except Exception:
-                pass

@@ -4,8 +4,6 @@ Integrates with MLflow for experiment tracking. Each trial trains a model
 with suggested hyperparameters and logs results.
 """
 
-from typing import Any
-
 import numpy as np
 import optuna
 import structlog
@@ -98,6 +96,7 @@ class HyperparameterOptimizer:
         Returns:
             Best parameters dict.
         """
+
         def objective(trial: optuna.Trial) -> float:
             if self.model_type == "xgboost":
                 params = self._get_xgboost_params(trial)
@@ -141,9 +140,11 @@ class HyperparameterOptimizer:
         if X_val is not None and y_val is not None:
             if model_type == "xgboost":
                 import xgboost as xgb
+
                 model = xgb.XGBClassifier(**params)
             else:
                 import lightgbm as lgb
+
                 model = lgb.LGBMClassifier(**params)
 
             model.fit(X, y, eval_set=[(X_val, y_val)], verbose=False)
@@ -158,9 +159,11 @@ class HyperparameterOptimizer:
 
             if model_type == "xgboost":
                 import xgboost as xgb
+
                 model = xgb.XGBClassifier(**params)
             else:
                 import lightgbm as lgb
+
                 model = lgb.LGBMClassifier(**params)
 
             model.fit(X_t, y_t, eval_set=[(X_v, y_v)], verbose=False)
@@ -213,7 +216,7 @@ class HyperparameterOptimizer:
         criterion = torch.nn.BCELoss()
 
         model.train()
-        for epoch in range(20):  # reduced epochs for speed
+        for _epoch in range(20):  # reduced epochs for speed
             for xb, yb in train_loader:
                 optimizer.zero_grad()
                 pred = model(xb)

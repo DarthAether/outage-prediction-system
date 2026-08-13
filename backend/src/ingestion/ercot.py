@@ -6,7 +6,7 @@ realistic simulated data for development/testing when no files are found.
 """
 
 import math
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from pathlib import Path
 
 import numpy as np
@@ -74,13 +74,15 @@ def _generate_simulated_data(
         freq_deviation = rng.normal(0, 0.02)
         frequency_hz = 60.0 + freq_deviation
 
-        rows.append({
-            "timestamp": ts,
-            "load_mw": round(load_mw, 2),
-            "capacity_mw": round(capacity_mw, 2),
-            "frequency_hz": round(frequency_hz, 4),
-            "region": rng.choice(list(ERCOT_REGIONS.keys())),
-        })
+        rows.append(
+            {
+                "timestamp": ts,
+                "load_mw": round(load_mw, 2),
+                "capacity_mw": round(capacity_mw, 2),
+                "frequency_hz": round(frequency_hz, 4),
+                "region": rng.choice(list(ERCOT_REGIONS.keys())),
+            }
+        )
 
     return pd.DataFrame(rows)
 
@@ -164,8 +166,11 @@ class ErcotIngestor(BaseIngestor):
             if col not in df.columns:
                 errors.append(f"Missing required column: {col}")
                 return df.head(0), ValidationResult(
-                    valid=False, total_records=total,
-                    valid_records=0, invalid_records=total, errors=errors,
+                    valid=False,
+                    total_records=total,
+                    valid_records=0,
+                    invalid_records=total,
+                    errors=errors,
                 )
 
         df["load_mw"] = pd.to_numeric(df["load_mw"], errors="coerce")
@@ -247,20 +252,24 @@ class ErcotIngestor(BaseIngestor):
 
         records: list[dict] = []
         for _, row in df.iterrows():
-            records.append({
-                "timestamp": row["timestamp"],
-                "load_mw": float(row["load_mw"]),
-                "capacity_mw": float(row["capacity_mw"]) if pd.notna(row.get("capacity_mw")) else None,
-                "frequency_hz": float(row["frequency_hz"]),
-                "reserve_margin_pct": (
-                    float(row["reserve_margin_pct"])
-                    if pd.notna(row.get("reserve_margin_pct"))
-                    else None
-                ),
-                "region": str(row.get("region", "ERCOT_SYSTEM")),
-                "source": row["source"],
-                "grid_stress_flag": int(row.get("grid_stress_flag", 0)),
-            })
+            records.append(
+                {
+                    "timestamp": row["timestamp"],
+                    "load_mw": float(row["load_mw"]),
+                    "capacity_mw": float(row["capacity_mw"])
+                    if pd.notna(row.get("capacity_mw"))
+                    else None,
+                    "frequency_hz": float(row["frequency_hz"]),
+                    "reserve_margin_pct": (
+                        float(row["reserve_margin_pct"])
+                        if pd.notna(row.get("reserve_margin_pct"))
+                        else None
+                    ),
+                    "region": str(row.get("region", "ERCOT_SYSTEM")),
+                    "source": row["source"],
+                    "grid_stress_flag": int(row.get("grid_stress_flag", 0)),
+                }
+            )
 
         batch_size = 1000
         total_inserted = 0

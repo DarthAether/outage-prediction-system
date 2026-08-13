@@ -6,9 +6,9 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.db.engine import get_db_session as _get_db_session
-from backend.src.services.alert_service import AlertService
-from backend.src.services.prediction_service import PredictionService
+from src.db.engine import get_db_session as _get_db_session
+from src.services.alert_service import AlertService
+from src.services.prediction_service import PredictionService
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:

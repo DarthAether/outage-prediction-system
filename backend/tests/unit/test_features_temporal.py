@@ -2,7 +2,6 @@
 
 from datetime import datetime, timedelta
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -33,7 +32,15 @@ class TestCyclicalEncoding:
     def test_all_keys_present(self):
         ts = datetime(2023, 6, 15, 12, 0)
         features = TemporalFeatureBuilder.cyclical_encoding(ts)
-        expected = {"hour_sin", "hour_cos", "dow_sin", "dow_cos", "month_sin", "month_cos", "is_weekend"}
+        expected = {
+            "hour_sin",
+            "hour_cos",
+            "dow_sin",
+            "dow_cos",
+            "month_sin",
+            "month_cos",
+            "is_weekend",
+        }
         assert set(features.keys()) == expected
 
 
@@ -51,15 +58,17 @@ class TestRollingWeatherStats:
 
     def test_counts_within_window(self):
         ts = datetime(2023, 6, 15, 12, 0)
-        df = pd.DataFrame({
-            "event_time": [
-                ts - timedelta(hours=2),
-                ts - timedelta(hours=5),
-                ts - timedelta(hours=30),
-            ],
-            "event_type": ["Wind", "Wind", "Wind"],
-            "magnitude": [50, 30, 80],
-        })
+        df = pd.DataFrame(
+            {
+                "event_time": [
+                    ts - timedelta(hours=2),
+                    ts - timedelta(hours=5),
+                    ts - timedelta(hours=30),
+                ],
+                "event_type": ["Wind", "Wind", "Wind"],
+                "magnitude": [50, 30, 80],
+            }
+        )
         features = self.builder.rolling_weather_stats(df, ts, windows=[6, 24])
 
         assert features["weather_count_6h"] == 2.0
@@ -72,10 +81,12 @@ class TestLagOutageFeatures:
 
     def test_lag_retrieval(self):
         ts = datetime(2023, 6, 15, 12, 0)
-        df = pd.DataFrame({
-            "observed_at": [ts - timedelta(hours=1), ts - timedelta(hours=24)],
-            "outage_fraction": [0.05, 0.02],
-        })
+        df = pd.DataFrame(
+            {
+                "observed_at": [ts - timedelta(hours=1), ts - timedelta(hours=24)],
+                "outage_fraction": [0.05, 0.02],
+            }
+        )
         features = self.builder.lag_outage_features(df, ts)
 
         assert features["lag_outage_1h"] == pytest.approx(0.05, abs=0.01)
@@ -117,12 +128,14 @@ class TestGridLoadFeatures:
 
     def test_load_ratio_computed(self):
         ts = datetime(2023, 6, 15, 12, 0)
-        df = pd.DataFrame({
-            "recorded_at": [ts],
-            "load_mw": [60000.0],
-            "capacity_mw": [80000.0],
-            "reserve_margin_pct": [25.0],
-        })
+        df = pd.DataFrame(
+            {
+                "recorded_at": [ts],
+                "load_mw": [60000.0],
+                "capacity_mw": [80000.0],
+                "reserve_margin_pct": [25.0],
+            }
+        )
         features = self.builder.grid_load_features(df, ts)
 
         assert features["current_load_mw"] == 60000.0
@@ -130,7 +143,9 @@ class TestGridLoadFeatures:
 
     def test_no_data_returns_zeros(self):
         ts = datetime(2023, 6, 15, 12, 0)
-        empty = pd.DataFrame(columns=["recorded_at", "load_mw", "capacity_mw", "reserve_margin_pct"])
+        empty = pd.DataFrame(
+            columns=["recorded_at", "load_mw", "capacity_mw", "reserve_margin_pct"]
+        )
         features = self.builder.grid_load_features(empty, ts)
 
         assert features["current_load_mw"] == 0.0

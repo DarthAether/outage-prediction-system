@@ -6,7 +6,7 @@ Alerts are returned as GeoJSON features with severity, certainty,
 event type, and polygon/point geometry.
 """
 
-from datetime import date, datetime, timezone
+from datetime import date
 
 import h3
 import httpx
@@ -30,57 +30,104 @@ NWS_SEVERITY_MAP: dict[str, float] = {
     "Unknown": 10.0,
 }
 
-VALID_EVENT_TYPES = frozenset([
-    "Tornado Warning",
-    "Tornado Watch",
-    "Severe Thunderstorm Warning",
-    "Severe Thunderstorm Watch",
-    "Flash Flood Warning",
-    "Flash Flood Watch",
-    "Flood Warning",
-    "Flood Watch",
-    "Flood Advisory",
-    "Winter Storm Warning",
-    "Winter Storm Watch",
-    "Winter Weather Advisory",
-    "Blizzard Warning",
-    "Ice Storm Warning",
-    "Wind Advisory",
-    "High Wind Warning",
-    "Extreme Wind Warning",
-    "Hurricane Warning",
-    "Hurricane Watch",
-    "Tropical Storm Warning",
-    "Tropical Storm Watch",
-    "Storm Surge Warning",
-    "Storm Surge Watch",
-    "Excessive Heat Warning",
-    "Excessive Heat Watch",
-    "Heat Advisory",
-    "Wind Chill Warning",
-    "Wind Chill Watch",
-    "Wind Chill Advisory",
-    "Fire Weather Watch",
-    "Red Flag Warning",
-    "Dense Fog Advisory",
-    "Freeze Warning",
-    "Frost Advisory",
-    "Coastal Flood Warning",
-    "Coastal Flood Watch",
-    "Coastal Flood Advisory",
-    "Rip Current Statement",
-    "Tsunami Warning",
-    "Tsunami Watch",
-    "Special Weather Statement",
-    "Severe Weather Statement",
-])
+VALID_EVENT_TYPES = frozenset(
+    [
+        "Tornado Warning",
+        "Tornado Watch",
+        "Severe Thunderstorm Warning",
+        "Severe Thunderstorm Watch",
+        "Flash Flood Warning",
+        "Flash Flood Watch",
+        "Flood Warning",
+        "Flood Watch",
+        "Flood Advisory",
+        "Winter Storm Warning",
+        "Winter Storm Watch",
+        "Winter Weather Advisory",
+        "Blizzard Warning",
+        "Ice Storm Warning",
+        "Wind Advisory",
+        "High Wind Warning",
+        "Extreme Wind Warning",
+        "Hurricane Warning",
+        "Hurricane Watch",
+        "Tropical Storm Warning",
+        "Tropical Storm Watch",
+        "Storm Surge Warning",
+        "Storm Surge Watch",
+        "Excessive Heat Warning",
+        "Excessive Heat Watch",
+        "Heat Advisory",
+        "Wind Chill Warning",
+        "Wind Chill Watch",
+        "Wind Chill Advisory",
+        "Fire Weather Watch",
+        "Red Flag Warning",
+        "Dense Fog Advisory",
+        "Freeze Warning",
+        "Frost Advisory",
+        "Coastal Flood Warning",
+        "Coastal Flood Watch",
+        "Coastal Flood Advisory",
+        "Rip Current Statement",
+        "Tsunami Warning",
+        "Tsunami Watch",
+        "Special Weather Statement",
+        "Severe Weather Statement",
+    ]
+)
 
 STATE_CODES = [
-    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
-    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
-    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+    "AL",
+    "AK",
+    "AZ",
+    "AR",
+    "CA",
+    "CO",
+    "CT",
+    "DE",
+    "FL",
+    "GA",
+    "HI",
+    "ID",
+    "IL",
+    "IN",
+    "IA",
+    "KS",
+    "KY",
+    "LA",
+    "ME",
+    "MD",
+    "MA",
+    "MI",
+    "MN",
+    "MS",
+    "MO",
+    "MT",
+    "NE",
+    "NV",
+    "NH",
+    "NJ",
+    "NM",
+    "NY",
+    "NC",
+    "ND",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VT",
+    "VA",
+    "WA",
+    "WV",
+    "WI",
+    "WY",
 ]
 
 
@@ -180,25 +227,27 @@ class NwsAlertsIngestor(BaseIngestor):
             geometry = feature.get("geometry")
             lat, lon = _compute_centroid(geometry)
 
-            rows.append({
-                "alert_id": props.get("id", ""),
-                "event_type": props.get("event", ""),
-                "severity": props.get("severity", "Unknown"),
-                "certainty": props.get("certainty", "Unknown"),
-                "urgency": props.get("urgency", "Unknown"),
-                "headline": props.get("headline", ""),
-                "description": props.get("description", ""),
-                "instruction": props.get("instruction", ""),
-                "onset": props.get("onset"),
-                "expires": props.get("expires"),
-                "effective": props.get("effective"),
-                "sender_name": props.get("senderName", ""),
-                "area_desc": props.get("areaDesc", ""),
-                "affected_zones": ",".join(props.get("affectedZones", [])),
-                "lat": lat,
-                "lon": lon,
-                "geometry_type": geometry.get("type") if geometry else None,
-            })
+            rows.append(
+                {
+                    "alert_id": props.get("id", ""),
+                    "event_type": props.get("event", ""),
+                    "severity": props.get("severity", "Unknown"),
+                    "certainty": props.get("certainty", "Unknown"),
+                    "urgency": props.get("urgency", "Unknown"),
+                    "headline": props.get("headline", ""),
+                    "description": props.get("description", ""),
+                    "instruction": props.get("instruction", ""),
+                    "onset": props.get("onset"),
+                    "expires": props.get("expires"),
+                    "effective": props.get("effective"),
+                    "sender_name": props.get("senderName", ""),
+                    "area_desc": props.get("areaDesc", ""),
+                    "affected_zones": ",".join(props.get("affectedZones", [])),
+                    "lat": lat,
+                    "lon": lon,
+                    "geometry_type": geometry.get("type") if geometry else None,
+                }
+            )
 
         df = pd.DataFrame(rows)
 
@@ -207,9 +256,7 @@ class NwsAlertsIngestor(BaseIngestor):
                 df[col] = pd.to_datetime(df[col], errors="coerce", utc=True)
 
         if "onset" in df.columns and df["onset"].notna().any():
-            mask = (df["onset"].dt.date >= start_date) & (
-                df["onset"].dt.date <= end_date
-            )
+            mask = (df["onset"].dt.date >= start_date) & (df["onset"].dt.date <= end_date)
             df = df.loc[mask | df["onset"].isna()]
 
         return df.reset_index(drop=True)
@@ -225,8 +272,11 @@ class NwsAlertsIngestor(BaseIngestor):
             if col not in df.columns:
                 errors.append(f"Missing required column: {col}")
                 return df.head(0), ValidationResult(
-                    valid=False, total_records=total,
-                    valid_records=0, invalid_records=total, errors=errors,
+                    valid=False,
+                    total_records=total,
+                    valid_records=0,
+                    invalid_records=total,
+                    errors=errors,
                 )
 
         valid_mask = df["event_type"].notna() & (df["event_type"].str.len() > 0)
@@ -237,8 +287,7 @@ class NwsAlertsIngestor(BaseIngestor):
         if unknown_count > 0:
             unknown_types = df.loc[~known_events & valid_mask, "event_type"].unique()[:10]
             warnings.append(
-                f"{unknown_count} alerts with unrecognized event types: "
-                f"{', '.join(unknown_types)}"
+                f"{unknown_count} alerts with unrecognized event types: {', '.join(unknown_types)}"
             )
 
         no_geo = valid_mask & (df["lat"].isna() | df["lon"].isna())
@@ -310,23 +359,25 @@ class NwsAlertsIngestor(BaseIngestor):
 
         records: list[dict] = []
         for _, row in df.iterrows():
-            records.append({
-                "event_time": row["event_time"],
-                "source": row["source"],
-                "event_type": row["event_type"],
-                "magnitude": float(row["magnitude"]) if pd.notna(row["magnitude"]) else None,
-                "magnitude_type": row.get("magnitude_type"),
-                "h3_index_res7": row.get("h3_index_res7"),
-                "h3_index_res9": row.get("h3_index_res9"),
-                "narrative": str(row.get("narrative", ""))[:2000],
-                "headline": str(row.get("headline", ""))[:500],
-                "severity": row.get("severity"),
-                "certainty": row.get("certainty"),
-                "urgency": row.get("urgency"),
-                "area_desc": str(row.get("area_desc", ""))[:1000],
-                "alert_id": row.get("alert_id"),
-                "expires": row.get("expires"),
-            })
+            records.append(
+                {
+                    "event_time": row["event_time"],
+                    "source": row["source"],
+                    "event_type": row["event_type"],
+                    "magnitude": float(row["magnitude"]) if pd.notna(row["magnitude"]) else None,
+                    "magnitude_type": row.get("magnitude_type"),
+                    "h3_index_res7": row.get("h3_index_res7"),
+                    "h3_index_res9": row.get("h3_index_res9"),
+                    "narrative": str(row.get("narrative", ""))[:2000],
+                    "headline": str(row.get("headline", ""))[:500],
+                    "severity": row.get("severity"),
+                    "certainty": row.get("certainty"),
+                    "urgency": row.get("urgency"),
+                    "area_desc": str(row.get("area_desc", ""))[:1000],
+                    "alert_id": row.get("alert_id"),
+                    "expires": row.get("expires"),
+                }
+            )
 
         batch_size = 500
         total_inserted = 0

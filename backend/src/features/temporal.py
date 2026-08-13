@@ -91,9 +91,8 @@ class TemporalFeatureBuilder:
         for lag in lags:
             target_time = timestamp - timedelta(hours=lag)
             tolerance = timedelta(minutes=30)
-            mask = (
-                (outage_df["observed_at"] >= target_time - tolerance)
-                & (outage_df["observed_at"] <= target_time + tolerance)
+            mask = (outage_df["observed_at"] >= target_time - tolerance) & (
+                outage_df["observed_at"] <= target_time + tolerance
             )
             matches = outage_df.loc[mask]
 
@@ -183,9 +182,8 @@ class TemporalFeatureBuilder:
             Dict with current_load_mw, reserve_margin, load_ratio, etc.
         """
         tolerance = timedelta(hours=1)
-        mask = (
-            (load_df["recorded_at"] >= timestamp - tolerance)
-            & (load_df["recorded_at"] <= timestamp + tolerance)
+        mask = (load_df["recorded_at"] >= timestamp - tolerance) & (
+            load_df["recorded_at"] <= timestamp + tolerance
         )
         recent = load_df.loc[mask]
 

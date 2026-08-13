@@ -4,8 +4,6 @@ Handles temporal splitting, class balancing, and conversion between
 pandas DataFrames and PyTorch datasets.
 """
 
-from datetime import datetime
-
 import numpy as np
 import pandas as pd
 import structlog
@@ -26,7 +24,12 @@ class OutageDataset:
         df: pd.DataFrame,
         target_col: str = "target_outage",
         timestamp_col: str = "timestamp",
-        exclude_cols: tuple[str, ...] = ("h3_cell", "timestamp", "target_outage", "target_max_outage_fraction"),
+        exclude_cols: tuple[str, ...] = (
+            "h3_cell",
+            "timestamp",
+            "target_outage",
+            "target_max_outage_fraction",
+        ),
     ):
         self.df = df.sort_values(timestamp_col).reset_index(drop=True)
         self.target_col = target_col
@@ -34,7 +37,8 @@ class OutageDataset:
         self.exclude_cols = exclude_cols
 
         self.feature_cols = [
-            c for c in df.columns
+            c
+            for c in df.columns
             if c not in exclude_cols and df[c].dtype in ("float64", "float32", "int64", "int32")
         ]
 

@@ -22,12 +22,22 @@ logger = structlog.get_logger(__name__)
 
 EVENT_CATEGORIES: dict[str, list[str]] = {
     "wind": [
-        "Thunderstorm Wind", "High Wind", "Hurricane",
-        "Hurricane (Typhoon)", "Tornado", "Strong Wind", "Tropical Storm",
+        "Thunderstorm Wind",
+        "High Wind",
+        "Hurricane",
+        "Hurricane (Typhoon)",
+        "Tornado",
+        "Strong Wind",
+        "Tropical Storm",
     ],
     "ice": [
-        "Ice Storm", "Winter Storm", "Heavy Snow",
-        "Winter Weather", "Blizzard", "Freezing Rain", "Sleet",
+        "Ice Storm",
+        "Winter Storm",
+        "Heavy Snow",
+        "Winter Weather",
+        "Blizzard",
+        "Freezing Rain",
+        "Sleet",
     ],
     "heat": ["Heat", "Excessive Heat"],
     "flood": ["Flash Flood", "Flood", "Coastal Flood"],
@@ -221,10 +231,14 @@ class CompoundEventFeatureBuilder:
             mags = pd.to_numeric(window_events["magnitude"], errors="coerce").fillna(0).values
             fatigue = float(np.dot(mags, recency_weights) / recency_weights.sum())
 
-        damages = pd.to_numeric(
-            window_events.get("damage_property", pd.Series(0, index=window_events.index)),
-            errors="coerce",
-        ).fillna(0).values
+        damages = (
+            pd.to_numeric(
+                window_events.get("damage_property", pd.Series(0, index=window_events.index)),
+                errors="coerce",
+            )
+            .fillna(0)
+            .values
+        )
 
         if len(damages) >= 3:
             half = len(damages) // 2
@@ -260,8 +274,7 @@ class CompoundEventFeatureBuilder:
         co_score = co_occurrence.get("compound_event_count", 0) / len(EVENT_CATEGORIES)
 
         interaction_magnitudes = [
-            v for k, v in interactions.items()
-            if k.startswith("interact_") and "mag_x_" in k
+            v for k, v in interactions.items() if k.startswith("interact_") and "mag_x_" in k
         ]
         if interaction_magnitudes:
             interact_score = min(1.0, np.mean(interaction_magnitudes) / 100.0)

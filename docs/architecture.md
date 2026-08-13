@@ -1,6 +1,8 @@
 # System Architecture
 
-This document describes the architecture of the Outage Prediction System, a real-time power outage risk prediction platform that combines weather, grid, infrastructure, and socioeconomic data through an ensemble of tree-based and temporal deep learning models.
+> **Design-document status:** This is an aspirational deployment architecture, not the evaluated thesis system. The verified benchmark uses a two-tree XGBoost/LightGBM average with physics-informed synthetic outage targets. Several components below—including live EAGLE-I/ERCOT ingestion, the LSTM stack, a worker process, and production deployment—are incomplete or not validated in this repository. See the root README for the implemented benchmark and current limitations.
+
+This document records the broader real-time platform design explored during the project.
 
 ---
 

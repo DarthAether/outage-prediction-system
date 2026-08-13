@@ -63,6 +63,8 @@ class AppConfig(BaseSettings):
     prediction_horizon_hours: int = 24
     uncertainty_mc_samples: int = 50
     batch_prediction_interval_minutes: int = 60
+    cors_origins: list[str] = ["http://localhost:3000"]
+    enable_admin_routes: bool = False
 
 
 def load_region_config(

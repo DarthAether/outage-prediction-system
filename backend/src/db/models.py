@@ -29,9 +29,7 @@ class Region(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     boundary = mapped_column(Geometry("MULTIPOLYGON", srid=4326), nullable=True)
     config_path: Mapped[str | None] = mapped_column(String(200), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")
 
 
 class WeatherEvent(Base):
@@ -55,9 +53,7 @@ class WeatherEvent(Base):
     narrative: Mapped[str | None] = mapped_column(Text, nullable=True)
     episode_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     raw_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    ingested_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    ingested_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")
 
 
 class OutageObservation(Base):
@@ -72,9 +68,7 @@ class OutageObservation(Base):
     outage_fraction: Mapped[float | None] = mapped_column(Float, nullable=True)
     h3_index_res7: Mapped[str | None] = mapped_column(String(15), nullable=True)
     source: Mapped[str] = mapped_column(String(20), default="eagle_i")
-    ingested_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    ingested_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")
 
 
 class GridLoad(Base):
@@ -88,9 +82,7 @@ class GridLoad(Base):
     reserve_margin_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
     frequency_hz: Mapped[float | None] = mapped_column(Float, nullable=True)
     source: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    ingested_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    ingested_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")
 
 
 class Infrastructure(Base):
@@ -105,9 +97,7 @@ class Infrastructure(Base):
     avg_line_age_years: Mapped[float | None] = mapped_column(Float, nullable=True)
     vegetation_density: Mapped[float | None] = mapped_column(Float, nullable=True)
     land_cover_type: Mapped[str | None] = mapped_column(String(30), nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    updated_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")
 
 
 class Socioeconomic(Base):
@@ -120,9 +110,7 @@ class Socioeconomic(Base):
     median_income: Mapped[float | None] = mapped_column(Float, nullable=True)
     critical_facilities_count: Mapped[int] = mapped_column(Integer, default=0)
     housing_age_median: Mapped[float | None] = mapped_column(Float, nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    updated_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")
 
 
 class FeatureStoreEntry(Base):
@@ -133,15 +121,9 @@ class FeatureStoreEntry(Base):
     h3_index_res7: Mapped[str | None] = mapped_column(String(15), nullable=True)
     feature_version: Mapped[str | None] = mapped_column(String(10), nullable=True)
     features: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    target_outage_occurred: Mapped[bool | None] = mapped_column(
-        Boolean, nullable=True
-    )
-    target_customers_affected: Mapped[int | None] = mapped_column(
-        Integer, nullable=True
-    )
-    ingested_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    target_outage_occurred: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    target_customers_affected: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ingested_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")
 
 
 class Prediction(Base):
@@ -157,18 +139,14 @@ class Prediction(Base):
     uncertainty_upper: Mapped[float | None] = mapped_column(Float, nullable=True)
     risk_level: Mapped[str | None] = mapped_column(String(10), nullable=True)
     features_snapshot: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")
 
 
 class Alert(Base):
     __tablename__ = "alerts"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")
     expires_at: Mapped[datetime | None] = mapped_column(nullable=True)
     region_code: Mapped[str | None] = mapped_column(String(20), nullable=True)
     h3_index_res7: Mapped[str | None] = mapped_column(String(15), nullable=True)
@@ -184,9 +162,7 @@ class Alert(Base):
 
 class ModelRegistryEntry(Base):
     __tablename__ = "model_registry"
-    __table_args__ = (
-        UniqueConstraint("model_name", "version", name="uq_model_name_version"),
-    )
+    __table_args__ = (UniqueConstraint("model_name", "version", name="uq_model_name_version"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     model_name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -196,6 +172,4 @@ class ModelRegistryEntry(Base):
     metrics: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False)
     promoted_at: Mapped[datetime | None] = mapped_column(nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        nullable=False, server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default="now()")

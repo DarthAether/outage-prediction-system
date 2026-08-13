@@ -1,6 +1,8 @@
 # API Reference
 
-Complete reference for the Outage Prediction API. The API provides real-time and batch outage risk predictions, alert management, historical data access, health monitoring, and administrative configuration.
+> **Prototype-document status:** This reference includes target and experimental endpoints that are not all backed by a loaded trained model or production services. Its sample model metadata and historical metrics are illustrative unless they match the verified results table in the root README. Treat the API as a research scaffold, not an operational outage service.
+
+Reference for the prototype API surface: risk predictions, alerts, historical queries, health checks, and administrative configuration.
 
 ---
 
@@ -525,10 +527,11 @@ Return model metrics over time from the model registry. Useful for monitoring mo
     "version": "v1.0.0",
     "region_code": "TX",
     "metrics": {
-      "auc_roc": 0.891,
-      "f1": 0.743,
-      "brier_score": 0.112,
-      "ece": 0.045
+      "auc_roc": 0.967,
+      "f1": 0.471,
+      "brier_score": 0.139,
+      "ece": 0.360,
+      "scope": "xgboost; physics-informed synthetic outage targets"
     },
     "is_active": true,
     "promoted_at": "2025-03-10T08:00:00Z",
@@ -562,11 +565,11 @@ Comprehensive system health check. Reports database connectivity, Redis connecti
 
 ```json
 {
-  "status": "healthy",
+  "status": "degraded",
   "db_connected": true,
-  "redis_connected": true,
-  "model_loaded": true,
-  "active_models": ["xgboost", "lightgbm", "lstm"],
+  "redis_connected": false,
+  "model_loaded": false,
+  "active_models": [],
   "uptime_seconds": 86423.15
 }
 ```
@@ -597,31 +600,14 @@ curl http://localhost:8000/api/v1/health \
 
 ### GET /health/models
 
-Return detailed information about currently loaded models, including ensemble member names, types, weights, and whether a stacking meta-learner is active.
+Return details about currently loaded models. The committed application scaffold does not load trained artifacts at startup, so the default response is:
 
 **Response Body** (`200 OK`)
 
 ```json
 {
-  "loaded": true,
-  "models": [
-    {
-      "name": "xgboost",
-      "type": "tabular",
-      "weight": 0.4
-    },
-    {
-      "name": "lightgbm",
-      "type": "tabular",
-      "weight": 0.35
-    },
-    {
-      "name": "lstm",
-      "type": "sequential",
-      "weight": 0.25
-    }
-  ],
-  "has_meta_learner": true
+  "loaded": false,
+  "models": []
 }
 ```
 

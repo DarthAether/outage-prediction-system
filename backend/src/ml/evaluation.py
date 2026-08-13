@@ -28,8 +28,14 @@ class ModelEvaluator:
     """Evaluates models with metrics suitable for both engineering and research reporting."""
 
     METRIC_NAMES = [
-        "auc_roc", "auc_pr", "f1", "precision", "recall",
-        "brier_score", "ece", "log_loss",
+        "auc_roc",
+        "auc_pr",
+        "f1",
+        "precision",
+        "recall",
+        "brier_score",
+        "ece",
+        "log_loss",
     ]
 
     def evaluate(
@@ -130,8 +136,8 @@ class ModelEvaluator:
         pred_a = (y_pred_a >= threshold).astype(int)
         pred_b = (y_pred_b >= threshold).astype(int)
 
-        correct_a = (pred_a == y_true)
-        correct_b = (pred_b == y_true)
+        correct_a = pred_a == y_true
+        correct_b = pred_b == y_true
 
         # b: A correct, B wrong; c: A wrong, B correct
         b = ((correct_a) & (~correct_b)).sum()
@@ -190,13 +196,15 @@ class ModelEvaluator:
             for metric in self.METRIC_NAMES:
                 full_val = full_metrics.get(metric, 0)
                 abl_val = abl_metrics.get(metric, 0)
-                results.append({
-                    "group_removed": group_name,
-                    "metric": metric,
-                    "full_value": full_val,
-                    "ablated_value": abl_val,
-                    "delta": full_val - abl_val,
-                })
+                results.append(
+                    {
+                        "group_removed": group_name,
+                        "metric": metric,
+                        "full_value": full_val,
+                        "ablated_value": abl_val,
+                        "delta": full_val - abl_val,
+                    }
+                )
 
             logger.info(
                 "ablation.group_removed",

@@ -1,8 +1,7 @@
 """Tests for spatial feature engineering with H3 indexing."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -88,10 +87,20 @@ class TestInfrastructureFeatures:
         assert features["infrastructure_age_risk"] == 0.0
 
     def test_age_risk_normalized(self):
-        young = {"avg_line_age_years": 5, "transmission_line_km": 0,
-                 "distribution_line_km": 0, "substations_count": 0, "vegetation_density": 0}
-        old = {"avg_line_age_years": 50, "transmission_line_km": 0,
-               "distribution_line_km": 0, "substations_count": 0, "vegetation_density": 0}
+        young = {
+            "avg_line_age_years": 5,
+            "transmission_line_km": 0,
+            "distribution_line_km": 0,
+            "substations_count": 0,
+            "vegetation_density": 0,
+        }
+        old = {
+            "avg_line_age_years": 50,
+            "transmission_line_km": 0,
+            "distribution_line_km": 0,
+            "substations_count": 0,
+            "vegetation_density": 0,
+        }
 
         young_features = self.builder.infrastructure_features(young)
         old_features = self.builder.infrastructure_features(old)

@@ -8,7 +8,6 @@ default, matching typical distribution feeder service areas.
 from datetime import datetime, timedelta
 
 import h3
-import numpy as np
 import pandas as pd
 import structlog
 
@@ -34,10 +33,18 @@ def h3_to_lat_lon(h3_index: str) -> tuple[float, float]:
 def h3_cell_area_km2(resolution: int = 7) -> float:
     """Approximate area of an H3 cell at a given resolution in km^2."""
     areas = {
-        0: 4_357_449.416, 1: 609_788.441, 2: 86_801.780,
-        3: 12_393.434, 4: 1_770.347, 5: 252.903,
-        6: 36.129, 7: 5.161, 8: 0.737,
-        9: 0.105, 10: 0.015, 11: 0.002,
+        0: 4_357_449.416,
+        1: 609_788.441,
+        2: 86_801.780,
+        3: 12_393.434,
+        4: 1_770.347,
+        5: 252.903,
+        6: 36.129,
+        7: 5.161,
+        8: 0.737,
+        9: 0.105,
+        10: 0.015,
+        11: 0.002,
     }
     return areas.get(resolution, 5.161)
 
@@ -110,9 +117,9 @@ class SpatialFeatureBuilder:
             if not neighbor_outages.empty:
                 neighbor_outage_mean = float(neighbor_outages["outage_fraction"].mean())
                 neighbor_outage_max = float(neighbor_outages["outage_fraction"].max())
-                cells_with_outage = neighbor_outages[
-                    neighbor_outages["outage_fraction"] > 0.01
-                ]["h3_index_res7"].nunique()
+                cells_with_outage = neighbor_outages[neighbor_outages["outage_fraction"] > 0.01][
+                    "h3_index_res7"
+                ].nunique()
                 outage_spread = cells_with_outage / max(len(neighbors_excluding_self), 1)
             else:
                 neighbor_outage_mean = 0.0
@@ -191,8 +198,6 @@ class SpatialFeatureBuilder:
     ) -> dict[str, float]:
         """Compute all spatial features for a single prediction point."""
         features: dict[str, float] = {}
-        features.update(
-            self.neighborhood_aggregation(h3_cell, weather_df, outage_df, timestamp, k)
-        )
+        features.update(self.neighborhood_aggregation(h3_cell, weather_df, outage_df, timestamp, k))
         features.update(self.infrastructure_features(infrastructure_data))
         return features

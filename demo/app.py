@@ -16,12 +16,18 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend"))
 
-st.set_page_config(page_title="GridShield AI", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="GridShield AI",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # DESIGN SYSTEM
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-st.markdown("""
+st.markdown(
+    """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -304,7 +310,10 @@ st.markdown("""
 .risk-high { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
 .risk-crit { background: rgba(220,38,38,0.15); color: #fca5a5; border: 1px solid rgba(220,38,38,0.3); }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
+
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # DATA
@@ -316,6 +325,7 @@ def load_models():
     scaler = pickle.load(open(ROOT / "models" / "scaler.pkl", "rb"))
     calibrator = pickle.load(open(ROOT / "models" / "calibrator.pkl", "rb"))
     return xgb, lgb, scaler, calibrator
+
 
 @st.cache_data
 def load_data():
@@ -329,33 +339,51 @@ def load_data():
     abl = pd.read_csv(ROOT / "models" / "ablation_results.csv")
     return r, cs, imp, ds, wx, out, shap, abl
 
+
 xgb_model, lgb_model, scaler, calibrator = load_models()
-results, cross_state, importance_df, dataset, weather_df, outage_df, shap_data, ablation_df = load_data()
+(
+    results,
+    cross_state,
+    importance_df,
+    dataset,
+    weather_df,
+    outage_df,
+    shap_data,
+    ablation_df,
+) = load_data()
 
 PLT = dict(
-    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
     font=dict(family="Inter", color="#64748b", size=12),
     margin=dict(l=40, r=20, t=40, b=40),
-    xaxis=dict(gridcolor="rgba(99,102,241,0.06)", zerolinecolor="rgba(99,102,241,0.08)"),
-    yaxis=dict(gridcolor="rgba(99,102,241,0.06)", zerolinecolor="rgba(99,102,241,0.08)"),
+    xaxis=dict(
+        gridcolor="rgba(99,102,241,0.06)", zerolinecolor="rgba(99,102,241,0.08)"
+    ),
+    yaxis=dict(
+        gridcolor="rgba(99,102,241,0.06)", zerolinecolor="rgba(99,102,241,0.08)"
+    ),
 )
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # TOP BAR
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-st.markdown("""
+st.markdown(
+    """
 <div class="topbar">
     <div class="topbar-left">
         <div class="topbar-logo">🛡️</div>
         <span class="topbar-name">GridShield AI</span>
     </div>
     <div class="topbar-right">
-        <span class="topbar-badge">Paper #822 — Submitted</span>
+        <span class="topbar-badge">Paper #822 — manuscript under review</span>
         <span>Kommuri · Mahadev · Chase · Dr. Adam Baba</span>
         <span>Malla Reddy University</span>
     </div>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # NAVIGATION
@@ -376,12 +404,19 @@ if page == "Overview":
     with left:
         st.markdown("")
         st.markdown("")
-        st.markdown('<div class="hero-num">0.967</div>', unsafe_allow_html=True)
-        st.markdown('<div class="hero-label">AUC-ROC Score</div>', unsafe_allow_html=True)
-        st.markdown('<div class="hero-sublabel">95% CI: [0.944, 0.984]</div>', unsafe_allow_html=True)
+        st.markdown('<div class="hero-num">0.966</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="hero-label">Ensemble AUC-ROC · synthetic targets</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="hero-sublabel">95% CI: [0.944, 0.984]</div>',
+            unsafe_allow_html=True,
+        )
 
     with right:
-        st.markdown("""
+        st.markdown(
+            """
         <div class="stat-grid">
             <div class="stat-card">
                 <div class="stat-value">0.947</div>
@@ -404,15 +439,23 @@ if page == "Overview":
                 <div class="stat-delta">recall = 0.90</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
     # Contributions
-    st.markdown('<div class="sec-title">Research Contributions</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-desc">Three novel contributions to the power systems reliability literature.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="sec-title">Research Contributions</div>', unsafe_allow_html=True
+    )
+    st.markdown(
+        '<div class="sec-desc">Three novel contributions to the power systems reliability literature.</div>',
+        unsafe_allow_html=True,
+    )
 
-    st.markdown("""
+    st.markdown(
+        """
     <div class="cb-grid">
         <div class="cb-card">
             <div class="cb-num">Contribution 01</div>
@@ -426,11 +469,13 @@ if page == "Overview":
         </div>
         <div class="cb-card">
             <div class="cb-num">Contribution 03</div>
-            <div class="cb-title">State-Agnostic Design</div>
-            <div class="cb-desc">YAML configuration files encode region-specific thresholds and hazard profiles. A Texas-trained model generalizes to California and Florida with AUC gaps under 0.7%.</div>
+            <div class="cb-title">Simulated Transfer Experiment</div>
+            <div class="cb-desc">YAML configuration files encode region-specific thresholds and hazard profiles. Transfer was explored across state-context datasets produced by the same synthetic target generator; this is not measured utility validation.</div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
@@ -447,7 +492,10 @@ if page == "Overview":
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 elif page == "Predict":
     st.markdown('<div class="sec-title">Live Prediction</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-desc">Adjust conditions. The trained ensemble predicts in real-time.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="sec-desc">Adjust conditions. The trained ensemble predicts in real-time.</div>',
+        unsafe_allow_html=True,
+    )
 
     left, right = st.columns([2, 3], gap="large")
 
@@ -464,18 +512,33 @@ elif page == "Predict":
         month = c2.slider("Month", 1, 12, 6)
 
     # Build features
-    fd = {col: 0.0 for col in dataset.columns if col not in ("h3_cell", "timestamp", "target_outage", "target_max_outage_fraction")}
-    fd.update({
-        "weather_count_3h": float(weather_count), "weather_max_mag_3h": max_mag,
-        "trend_outage_3h": trend_3h, "trend_outage_6h": trend_6h,
-        "compound_event_count": float(compound), "compound_severity_index": min(1.0, compound/6.0),
-        "has_compound_event": float(compound >= 2), "current_load_mw": float(grid_load),
-        "reserve_margin_pct": reserve, "load_capacity_ratio": grid_load/85000.0,
-        "hour_sin": np.sin(2*np.pi*hour/24), "hour_cos": np.cos(2*np.pi*hour/24),
-        "month_sin": np.sin(2*np.pi*(month-1)/12), "month_cos": np.cos(2*np.pi*(month-1)/12),
-    })
+    fd = {
+        col: 0.0
+        for col in dataset.columns
+        if col
+        not in ("h3_cell", "timestamp", "target_outage", "target_max_outage_fraction")
+    }
+    fd.update(
+        {
+            "weather_count_3h": float(weather_count),
+            "weather_max_mag_3h": max_mag,
+            "trend_outage_3h": trend_3h,
+            "trend_outage_6h": trend_6h,
+            "compound_event_count": float(compound),
+            "compound_severity_index": min(1.0, compound / 6.0),
+            "has_compound_event": float(compound >= 2),
+            "current_load_mw": float(grid_load),
+            "reserve_margin_pct": reserve,
+            "load_capacity_ratio": grid_load / 85000.0,
+            "hour_sin": np.sin(2 * np.pi * hour / 24),
+            "hour_cos": np.cos(2 * np.pi * hour / 24),
+            "month_sin": np.sin(2 * np.pi * (month - 1) / 12),
+            "month_cos": np.cos(2 * np.pi * (month - 1) / 12),
+        }
+    )
 
     from src.ml.dataset import OutageDataset
+
     fcols = OutageDataset(dataset).feature_cols
     X = scaler.transform(np.array([[fd.get(c, 0.0) for c in fcols]], dtype=np.float32))
 
@@ -485,19 +548,26 @@ elif page == "Predict":
     cp = float(np.clip(calibrator.predict([ep])[0], 0, 1))
     unc = abs(xp - lp) / 2.0
 
-    if cp < 0.25: rl, rc, rcls = "LOW", "#10b981", "risk-low"
-    elif cp < 0.55: rl, rc, rcls = "MODERATE", "#f59e0b", "risk-mod"
-    elif cp < 0.80: rl, rc, rcls = "HIGH", "#ef4444", "risk-high"
-    else: rl, rc, rcls = "CRITICAL", "#dc2626", "risk-crit"
+    if cp < 0.25:
+        rl, rc, rcls = "LOW", "#10b981", "risk-low"
+    elif cp < 0.55:
+        rl, rc, rcls = "MODERATE", "#f59e0b", "risk-mod"
+    elif cp < 0.80:
+        rl, rc, rcls = "HIGH", "#ef4444", "risk-high"
+    else:
+        rl, rc, rcls = "CRITICAL", "#dc2626", "risk-crit"
 
     with right:
         # Big risk number
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="text-align:center; padding: 20px 0;">
             <div style="font-size: 5rem; font-weight: 900; color: {rc}; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.04em; line-height: 1;">{cp:.0%}</div>
             <div style="margin-top: 12px;"><span class="risk-badge {rcls}">{rl} RISK</span></div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("XGBoost", f"{xp:.3f}")
@@ -510,16 +580,25 @@ elif page == "Predict":
         elif rl == "MODERATE":
             st.warning("Pre-stage crews. Monitor NWS alerts. Notify on-call teams.")
         elif rl == "HIGH":
-            st.error("Deploy field teams. Issue customer alerts. Activate backup generation.")
+            st.error(
+                "Deploy field teams. Issue customer alerts. Activate backup generation."
+            )
         else:
-            st.error("EMERGENCY: Full response. Coordinate with first responders. Open shelters.")
+            st.error(
+                "EMERGENCY: Full response. Coordinate with first responders. Open shelters."
+            )
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # PERFORMANCE
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 elif page == "Performance":
-    st.markdown('<div class="sec-title">Model Performance</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-desc">Evaluated on 1,800 held-out test samples with temporal split.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="sec-title">Model Performance</div>', unsafe_allow_html=True
+    )
+    st.markdown(
+        '<div class="sec-desc">Evaluated on 1,800 held-out samples using the chronological row split implemented in the repository; no 72-hour embargo is currently applied.</div>',
+        unsafe_allow_html=True,
+    )
 
     tab1, tab2, tab3 = st.tabs(["Metrics", "Calibration", "Ablation"])
 
@@ -534,7 +613,13 @@ elif page == "Performance":
             ci = []
             for met, v in results["bootstrap_ci"].items():
                 if v["mean"] > 0:
-                    ci.append({"Metric": met, "Mean": f"{v['mean']:.4f}", "95% CI": f"[{v['lower']:.4f}, {v['upper']:.4f}]"})
+                    ci.append(
+                        {
+                            "Metric": met,
+                            "Mean": f"{v['mean']:.4f}",
+                            "95% CI": f"[{v['lower']:.4f}, {v['upper']:.4f}]",
+                        }
+                    )
             st.dataframe(pd.DataFrame(ci).set_index("Metric"), use_container_width=True)
 
     with tab2:
@@ -543,63 +628,162 @@ elif page == "Performance":
         c2.metric("ECE After", f"{results['ece_after_calibration']:.4f}")
         f = ROOT / "paper" / "figures" / "fig1_reliability_diagram.png"
         if f.exists():
-            st.image(str(f), caption="Reliability diagram — before vs after isotonic calibration")
+            st.image(
+                str(f),
+                caption="Reliability diagram — before vs after isotonic calibration",
+            )
 
     with tab3:
         a = ablation_df[ablation_df["metric"] == "auc_roc"].copy()
         fig = go.Figure()
-        fig.add_trace(go.Bar(x=a["group_removed"], y=a["full_value"], name="Full Model", marker_color="#6366f1"))
-        fig.add_trace(go.Bar(x=a["group_removed"], y=a["ablated_value"], name="Removed", marker_color="#ef4444"))
-        fig.update_layout(barmode="group", height=380, title="AUC-ROC: Full vs Feature Group Removed", **PLT)
+        fig.add_trace(
+            go.Bar(
+                x=a["group_removed"],
+                y=a["full_value"],
+                name="Full Model",
+                marker_color="#6366f1",
+            )
+        )
+        fig.add_trace(
+            go.Bar(
+                x=a["group_removed"],
+                y=a["ablated_value"],
+                name="Removed",
+                marker_color="#ef4444",
+            )
+        )
+        fig.update_layout(
+            barmode="group",
+            height=380,
+            title="AUC-ROC: Full vs Feature Group Removed",
+            **PLT,
+        )
         st.plotly_chart(fig, use_container_width=True)
-        st.caption("Removing temporal features drops AUC from 0.968 → 0.489, confirming outage prediction is a temporal pattern recognition task.")
+        st.caption(
+            "Removing temporal features drops AUC from 0.968 → 0.489, confirming outage prediction is a temporal pattern recognition task."
+        )
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # FEATURES
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 elif page == "Features":
     st.markdown('<div class="sec-title">Feature Analysis</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-desc">138 features across temporal, spatial, compound, and socioeconomic groups.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="sec-desc">138 features across temporal, spatial, compound, and socioeconomic groups.</div>',
+        unsafe_allow_html=True,
+    )
 
     tab1, tab2 = st.tabs(["Importance", "SHAP"])
 
     with tab1:
         n = st.slider("Top features", 10, 40, 20)
-        top = importance_df.head(n).copy()
+        top = importance_df.nlargest(n, "xgb_importance").copy()
 
         def grp(name):
-            if any(k in name for k in ["weather_", "trend_", "lag_", "hour_", "dow_", "month_", "is_weekend", "current_load", "reserve_margin", "load_capacity"]):
+            if any(
+                k in name
+                for k in [
+                    "weather_",
+                    "trend_",
+                    "lag_",
+                    "hour_",
+                    "dow_",
+                    "month_",
+                    "is_weekend",
+                    "current_load",
+                    "reserve_margin",
+                    "load_capacity",
+                ]
+            ):
                 return "Temporal"
-            elif any(k in name for k in ["neighbor_", "transmission", "distribution", "substation", "vegetation", "line_density", "infrastructure"]):
+            elif any(
+                k in name
+                for k in [
+                    "neighbor_",
+                    "transmission",
+                    "distribution",
+                    "substation",
+                    "vegetation",
+                    "line_density",
+                    "infrastructure",
+                ]
+            ):
                 return "Spatial"
-            elif any(k in name for k in ["cooccur_", "interact_", "cat_", "seq_", "compound_", "has_compound"]):
+            elif any(
+                k in name
+                for k in [
+                    "cooccur_",
+                    "interact_",
+                    "cat_",
+                    "seq_",
+                    "compound_",
+                    "has_compound",
+                ]
+            ):
                 return "Compound"
             return "Socioeconomic"
 
         top["group"] = top["feature"].apply(grp)
-        fig = px.bar(top, x="avg_importance", y="feature", color="group", orientation="h",
-                     color_discrete_map={"Temporal": "#6366f1", "Spatial": "#10b981", "Compound": "#ef4444", "Socioeconomic": "#f59e0b"})
-        fig.update_layout(height=max(400, n*26), yaxis=dict(autorange="reversed"), **PLT)
+        fig = px.bar(
+            top,
+            x="xgb_importance",
+            y="feature",
+            color="group",
+            orientation="h",
+            color_discrete_map={
+                "Temporal": "#6366f1",
+                "Spatial": "#10b981",
+                "Compound": "#ef4444",
+                "Socioeconomic": "#f59e0b",
+            },
+        )
+        fig.update_layout(
+            height=max(400, n * 26), yaxis=dict(autorange="reversed"), **PLT
+        )
         st.plotly_chart(fig, use_container_width=True)
+        st.caption(
+            "XGBoost importance only. The stored LightGBM split counts use a different scale and are not averaged here."
+        )
 
     with tab2:
         sdf = pd.DataFrame(shap_data["top_features"]).head(20)
-        fig = px.bar(sdf, x="mean_abs_shap", y="feature", orientation="h",
-                     color="mean_abs_shap", color_continuous_scale=["#1e1b4b", "#6366f1", "#818cf8"])
-        fig.update_layout(height=520, yaxis=dict(autorange="reversed"), title="Mean |SHAP| Value", **PLT)
+        fig = px.bar(
+            sdf,
+            x="mean_abs_shap",
+            y="feature",
+            orientation="h",
+            color="mean_abs_shap",
+            color_continuous_scale=["#1e1b4b", "#6366f1", "#818cf8"],
+        )
+        fig.update_layout(
+            height=520,
+            yaxis=dict(autorange="reversed"),
+            title="Mean |SHAP| Value",
+            **PLT,
+        )
         st.plotly_chart(fig, use_container_width=True)
 
         c1, c2 = st.columns(2)
-        for path, cap, col in [("fig_shap_beeswarm.png", "SHAP Beeswarm", c1), ("fig_shap_dependence_weather.png", "Dependence Plot", c2)]:
+        for path, cap, col in [
+            ("fig_shap_beeswarm.png", "SHAP Beeswarm", c1),
+            ("fig_shap_dependence_weather.png", "Dependence Plot", c2),
+        ]:
             fp = ROOT / "paper" / "figures" / path
-            if fp.exists(): col.image(str(fp), caption=cap)
+            if fp.exists():
+                col.image(str(fp), caption=cap)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # CROSS-STATE
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 elif page == "Cross-State":
-    st.markdown('<div class="sec-title">Cross-State Generalization</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-desc">A model trained on Texas data, evaluated on California and Florida.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="sec-title">Preliminary Simulated Transfer</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="sec-desc">A Texas-context model evaluated on California- and Florida-context datasets produced by the same synthetic target generator.</div>',
+        unsafe_allow_html=True,
+    )
 
     if "summary" in cross_state:
         for state, data in cross_state["summary"].items():
@@ -614,12 +798,20 @@ elif page == "Cross-State":
 
     cs_df = pd.DataFrame(cross_state["all_results"])
     cs_xgb = cs_df[cs_df["model"].str.contains("XGBoost")]
-    fig = px.bar(cs_xgb, x="dataset", y="auc_roc", color="model", barmode="group",
-                 color_discrete_sequence=["#6366f1", "#818cf8", "#a5b4fc", "#10b981"])
+    fig = px.bar(
+        cs_xgb,
+        x="dataset",
+        y="auc_roc",
+        color="model",
+        barmode="group",
+        color_discrete_sequence=["#6366f1", "#818cf8", "#a5b4fc", "#10b981"],
+    )
     fig.update_layout(height=380, title="AUC-ROC Across States", **PLT)
     st.plotly_chart(fig, use_container_width=True)
 
-    st.info("The TX model matches locally-trained models with AUC gaps of only 0.002 — validating the state-agnostic architecture.")
+    st.info(
+        "These small within-generator gaps are preliminary results in a simulated setup; they do not validate real-world geographic transfer."
+    )
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # DATA
@@ -632,22 +824,40 @@ elif page == "Data":
     with tab1:
         st.metric("Events", f"{len(weather_df):,}")
         ec = weather_df["event_type"].value_counts()
-        fig = px.bar(x=ec.index, y=ec.values, labels={"x": "Type", "y": "Count"},
-                     color=ec.values, color_continuous_scale=["#1e1b4b", "#6366f1"])
+        fig = px.bar(
+            x=ec.index,
+            y=ec.values,
+            labels={"x": "Type", "y": "Count"},
+            color=ec.values,
+            color_continuous_scale=["#1e1b4b", "#6366f1"],
+        )
         fig.update_layout(height=360, title="NOAA Storm Events — Texas 2022", **PLT)
         st.plotly_chart(fig, use_container_width=True)
         st.dataframe(weather_df.head(50), use_container_width=True)
 
     with tab2:
         st.metric("Records", f"{len(outage_df):,}")
-        fig = px.histogram(outage_df, x="outage_fraction", nbins=50, color_discrete_sequence=["#6366f1"])
+        fig = px.histogram(
+            outage_df,
+            x="outage_fraction",
+            nbins=50,
+            color_discrete_sequence=["#6366f1"],
+        )
         fig.update_layout(height=320, title="Outage Severity Distribution", **PLT)
         st.plotly_chart(fig, use_container_width=True)
 
     with tab3:
         st.metric("Samples", f"{len(dataset):,}")
         tc = dataset["target_outage"].value_counts()
-        fig = px.pie(values=tc.values, names=["No Outage", "Outage"], hole=0.6,
-                     color_discrete_sequence=["#10b981", "#ef4444"])
-        fig.update_layout(height=320, title="Target Distribution", **{k: v for k, v in PLT.items() if "axis" not in k})
+        fig = px.pie(
+            values=tc.values,
+            names=["No Outage", "Outage"],
+            hole=0.6,
+            color_discrete_sequence=["#10b981", "#ef4444"],
+        )
+        fig.update_layout(
+            height=320,
+            title="Target Distribution",
+            **{k: v for k, v in PLT.items() if "axis" not in k},
+        )
         st.plotly_chart(fig, use_container_width=True)

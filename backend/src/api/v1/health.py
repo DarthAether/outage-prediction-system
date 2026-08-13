@@ -6,8 +6,8 @@ import structlog
 from fastapi import APIRouter, Request
 from sqlalchemy import text
 
-from backend.src.api.dependencies import DBSession
-from backend.src.api.schemas.common import HealthResponse
+from src.api.dependencies import DBSession
+from src.api.schemas.common import HealthResponse
 
 logger = structlog.get_logger(__name__)
 

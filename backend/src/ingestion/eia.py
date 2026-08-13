@@ -22,10 +22,22 @@ logger = structlog.get_logger(__name__)
 EIA_API_BASE = "https://api.eia.gov/v2"
 
 STATE_FIPS_MAP: dict[str, str] = {
-    "TX": "48", "CA": "06", "FL": "12", "NY": "36",
-    "PA": "42", "OH": "39", "IL": "17", "GA": "13",
-    "NC": "37", "MI": "26", "NJ": "34", "VA": "51",
-    "LA": "22", "WA": "53", "OR": "41", "CO": "08",
+    "TX": "48",
+    "CA": "06",
+    "FL": "12",
+    "NY": "36",
+    "PA": "42",
+    "OH": "39",
+    "IL": "17",
+    "GA": "13",
+    "NC": "37",
+    "MI": "26",
+    "NJ": "34",
+    "VA": "51",
+    "LA": "22",
+    "WA": "53",
+    "OR": "41",
+    "CO": "08",
 }
 
 
@@ -110,9 +122,7 @@ class EiaIngestor(BaseIngestor):
                         combined[col] = combined[col].astype(str).str.zfill(2)
                         combined = combined[combined[col] == state_fips]
                     elif col in ("state", "state_code"):
-                        combined = combined[
-                            combined[col].astype(str).str.upper() == region_code
-                        ]
+                        combined = combined[combined[col].astype(str).str.upper() == region_code]
                     break
 
         return combined.reset_index(drop=True)
@@ -193,10 +203,14 @@ class EiaIngestor(BaseIngestor):
         warnings: list[str] = []
 
         numeric_candidates = [
-            "transmission_line_km", "transmission_line_miles",
-            "substations_count", "generation_capacity_mw",
-            "total_customers", "peak_demand_mw",
-            "generation", "total-consumption-btu",
+            "transmission_line_km",
+            "transmission_line_miles",
+            "substations_count",
+            "generation_capacity_mw",
+            "total_customers",
+            "peak_demand_mw",
+            "generation",
+            "total-consumption-btu",
         ]
 
         found_numeric = False
@@ -270,9 +284,7 @@ class EiaIngestor(BaseIngestor):
         if "generation_capacity_mw" in df.columns:
             result["generation_capacity_mw"] = df["generation_capacity_mw"]
         elif "generation" in df.columns:
-            result["generation_capacity_mw"] = pd.to_numeric(
-                df["generation"], errors="coerce"
-            )
+            result["generation_capacity_mw"] = pd.to_numeric(df["generation"], errors="coerce")
         else:
             result["generation_capacity_mw"] = None
 
@@ -298,15 +310,20 @@ class EiaIngestor(BaseIngestor):
             rec: dict = {"source": "eia"}
 
             for col in [
-                "county_fips", "state_fips", "state_code", "utility_id",
+                "county_fips",
+                "state_fips",
+                "state_code",
+                "utility_id",
                 "utility_name",
             ]:
                 if col in row.index and pd.notna(row.get(col)):
                     rec[col] = str(row[col])
 
             for col in [
-                "transmission_line_km", "substations_count",
-                "generation_capacity_mw", "total_customers",
+                "transmission_line_km",
+                "substations_count",
+                "generation_capacity_mw",
+                "total_customers",
                 "peak_demand_mw",
             ]:
                 if col in row.index and pd.notna(row.get(col)):
@@ -330,9 +347,7 @@ class EiaIngestor(BaseIngestor):
             placeholders = []
             params: dict = {}
             for j, rec in enumerate(batch):
-                ph = ", ".join(
-                    f":v{i + j}_{k}" for k in all_keys_list
-                )
+                ph = ", ".join(f":v{i + j}_{k}" for k in all_keys_list)
                 placeholders.append(f"({ph})")
                 for k in all_keys_list:
                     params[f"v{i + j}_{k}"] = rec.get(k)
@@ -342,8 +357,7 @@ class EiaIngestor(BaseIngestor):
 
             conflict_col = "utility_id" if "utility_id" in all_keys_list else "county_fips"
             update_cols = [
-                k for k in all_keys_list
-                if k not in (conflict_col, "source", "data_year")
+                k for k in all_keys_list if k not in (conflict_col, "source", "data_year")
             ]
             update_clause = ", ".join(f"{c} = EXCLUDED.{c}" for c in update_cols)
 

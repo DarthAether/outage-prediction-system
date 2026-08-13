@@ -57,7 +57,7 @@ rheachrischase@gmail.com
 \maketitle
 
 \begin{abstract}
-Weather-related events account for approximately 80\% of major power service interruptions in the United States, yet existing prediction models treat weather hazards independently, produce uncalibrated point estimates, and require state-specific retraining. We present a machine learning framework that addresses all three limitations. We introduce compound event interaction features capturing co-occurrence patterns and sequential escalation across six weather categories using pairwise severity products and a recency-weighted infrastructure fatigue score. We incorporate uncertainty quantification through ensemble disagreement between XGBoost and LightGBM base learners, followed by post-hoc isotonic calibration. We design a configuration-driven architecture that generalizes across states without retraining. Using 1{,}945 geocoded NOAA Storm Events from Texas (2022) mapped to H3 resolution-7 hexagonal cells ($\sim$5.16~km$^2$) with physics-informed synthetic outage targets, we train and evaluate a gradient-boosted ensemble on 12{,}000 samples with 138 engineered features. The ensemble achieves AUC-ROC of 0.967 (95\% CI: 0.944--0.984), F1~=~0.947 at an optimized threshold, and perfect precision at 0.90 recall. Isotonic calibration reduces Expected Calibration Error from 0.267 to 0.004. Cross-state evaluation on California (577 events) and Florida (930 events) shows AUC-ROC degradation of only 0.002--0.007 relative to locally-trained models, validating the state-agnostic design. Feature ablation confirms temporal features as the dominant predictor group ($\Delta$AUC~=~0.479), with the compound severity index ranking 18th among 138 features. Code and data are available at https://github.com/DarthAether/outage-prediction-system.
+Weather-related events account for approximately 80\% of major power service interruptions in the United States, while many prediction studies model hazards independently and report uncalibrated point estimates. We present a research prototype for exploring compound-event features, calibrated uncertainty, and configuration-driven transfer experiments. We introduce co-occurrence and sequential-escalation features across six weather categories and combine XGBoost and LightGBM probabilities before post-hoc isotonic calibration. Using 1{,}945 geocoded NOAA Storm Events from Texas (2022) mapped to H3 resolution-7 hexagonal cells ($\sim$5.16~km$^2$), we generate physics-informed synthetic outage targets and evaluate 12{,}000 samples with 138 engineered features. XGBoost reaches AUC-ROC 0.967; the two-tree probability average reaches AUC-ROC 0.966 (95\% bootstrap CI: 0.944--0.984) and F1~=~0.947 at threshold 0.39. Isotonic calibration reduces Expected Calibration Error from 0.267 to 0.004 on this synthetic-target benchmark. Experiments on California- and Florida-context fixtures produced by the same target generator show small AUC gaps relative to locally trained models, but do not establish generalization to measured utility outages. Feature ablation identifies temporal features as the dominant predictor group ($\Delta$AUC~=~0.479); compound-feature ablation has negligible aggregate AUC impact in this setup. Code and processed research fixtures are available at https://github.com/DarthAether/outage-prediction-system.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -81,10 +81,10 @@ A growing body of work applies machine learning to outage estimation. Early effo
 
 We make the following contributions:
 \begin{enumerate}
-    \item We formalize compound weather event features---co-occurrence indicators, pairwise severity interaction terms, and sequential escalation scores---yielding a composite severity index that ranks 18th among 138 engineered features in the trained ensemble, providing predictive signal that single-event representations miss.
-    \item We implement ensemble-based uncertainty quantification with post-hoc isotonic calibration, reducing Expected Calibration Error (ECE) from 0.267 to 0.004---a 98.4\% reduction that brings predicted probabilities within the operationally reliable range ($\text{ECE} < 0.10$).
-    \item We design a configuration-driven, state-agnostic architecture in which region-specific risk thresholds and dominant hazard profiles are encoded in declarative YAML files. Cross-state evaluation shows AUC-ROC gaps of only 0.002--0.007 between a Texas-trained model and locally-trained models on California and Florida data.
-    \item We release a fully reproducible pipeline including data processing, model training, evaluation scripts, and a web-based dashboard as open-source software.
+    \item We formalize compound-weather features---co-occurrence indicators, pairwise severity interactions, and sequential escalation scores---and quantify their contribution through ablation on the synthetic-target benchmark.
+    \item We implement ensemble disagreement and post-hoc isotonic calibration, reducing ECE from 0.267 to 0.004 on the held-out synthetic-target partition.
+    \item We separate regional experimental assumptions into declarative YAML files and report preliminary transfer comparisons across state-context fixtures generated under the same simulation procedure.
+    \item We release processed research fixtures, model-training and evaluation scripts, tests, and a web dashboard; raw-source reconstruction still requires a separately downloaded NOAA details file.
 \end{enumerate}
 
 The remainder of this paper is organized as follows. Section~\ref{sec:related} surveys related work. Section~\ref{sec:data} describes data collection and preprocessing. Section~\ref{sec:methodology} details the methodology. Section~\ref{sec:architecture} describes the system architecture. Sections~\ref{sec:experiments} and~\ref{sec:results} present experimental setup and results. Section~\ref{sec:discussion} discusses implications and limitations. Section~\ref{sec:conclusion} concludes.
@@ -256,18 +256,18 @@ Raw ensemble probabilities exhibit systematic miscalibration~\cite{guo2017calibr
 \end{equation}
 with $B=15$ equal-width bins.
 
-\subsection{State-Agnostic Framework}
+\subsection{Configuration-Driven Transfer Framework}
 
-Rather than retraining per state, region-specific knowledge is encoded in YAML configuration files specifying: (i)~four-tier risk threshold cutpoints calibrated to regional outage baselines, (ii)~ordered lists of dominant weather types, and (iii)~seasonal adjustment weights. The core model is trained on one state's data; at inference time, the configuration adjusts decision thresholds without modifying model parameters. Adding a new state requires only writing a configuration file.
+Region-specific experimental settings are encoded in YAML configuration files specifying: (i)~four-tier risk threshold cutpoints, (ii)~ordered lists of dominant weather types, and (iii)~seasonal adjustment weights. This separates regional assumptions from model code and supports controlled transfer experiments. A configuration file alone is not sufficient evidence that a model is valid in a new state; measured local validation and, where necessary, retraining remain required.
 
 %% ============================================================
 %% V. SYSTEM ARCHITECTURE
 %% ============================================================
 \section{System Architecture}\label{sec:architecture}
 
-The system comprises five layers. \textbf{Data Ingestion}: scheduled ETL pipelines ingest NOAA Storm Events, NWS alerts, and METAR observations into TimescaleDB with time-series compression. \textbf{Feature Store}: raw records are transformed into the 138-dimensional feature vector, materialized in a columnar store indexed by $(h, t)$. \textbf{Model Ensemble}: serialized XGBoost and LightGBM models are served via a FastAPI microservice. \textbf{Prediction API}: REST endpoints expose per-cell risk scores, uncertainty estimates, and risk-tier classifications; Redis Streams buffer real-time alerts. \textbf{Dashboard}: a Next.js frontend renders a hexagonal risk map, 72-hour forecast timeline, uncertainty ribbons, and compound event indicators.
+The evaluated research workflow comprises NOAA-derived inputs, simulated target and context generation, a 138-dimensional feature pipeline, XGBoost and LightGBM training, probability averaging, isotonic calibration, and held-out evaluation. The repository also explores a broader five-layer deployment architecture: scheduled ingestion, a feature store, serialized model serving, a FastAPI service, and a Next.js dashboard. Several deployment components are scaffolds and were not part of the evaluated benchmark.
 
-The entire stack is containerized with Docker Compose (TimescaleDB, Redis, MLflow, FastAPI, Next.js) and is deployable with a single \texttt{docker compose up} command. Source code is available at https://github.com/DarthAether/outage-prediction-system.
+Experimental Docker Compose definitions for TimescaleDB, Redis, MLflow, FastAPI, and Next.js are included, but a clean one-command deployment has not been validated. Source code is available at https://github.com/DarthAether/outage-prediction-system.
 
 %% ============================================================
 %% VI. EXPERIMENTAL SETUP
@@ -276,7 +276,7 @@ The entire stack is containerized with Docker Compose (TimescaleDB, Redis, MLflo
 
 \subsection{Temporal Split}
 
-Data are split chronologically: training ($n=8{,}400$, 70\%), validation ($n=1{,}800$, 15\%), test ($n=1{,}800$, 15\%). No temporal leakage is possible because all features use strictly historical look-back windows with a minimum 72-hour buffer from the split boundary. Continuous features are standardized using training-set statistics.
+Data are sorted chronologically and divided into contiguous training ($n=8{,}400$, 70\%), validation ($n=1{,}800$, 15\%), and test ($n=1{,}800$, 15\%) row partitions. The current implementation does not apply an embargo between partitions; adding a time-based buffer and auditing same-timestamp sampling are necessary follow-up checks. Continuous features are standardized using training-set statistics.
 
 Table~\ref{tab:splits} summarizes the partition characteristics.
 
@@ -393,13 +393,13 @@ Fig.~\ref{fig:calibration} shows the reliability diagram before and after isoton
 
 The average epistemic uncertainty (ensemble disagreement) across the test set is 0.139. The Brier score of the calibrated ensemble is 0.090, reflecting both strong discrimination and good calibration.
 
-\subsection{Cross-State Generalization}
+\subsection{Preliminary Simulated Transfer}
 
-Table~\ref{tab:crossstate} evaluates the Texas-trained model on independently constructed California and Florida datasets. The cross-state AUC-ROC gap is remarkably small: 0.002 for both states relative to locally-trained models. On Florida, the Texas model actually achieves \textit{higher} F1 (0.965 vs.\ 0.948) than the locally-trained model, likely because the Texas training set is larger (8{,}400 vs.\ 7{,}000 samples). These results validate the state-agnostic design: the weather-to-outage relationship encoded in temporal, spatial, and compound features transfers across climatically distinct regions.
+Table~\ref{tab:crossstate} evaluates the Texas-context model on separately generated California- and Florida-context datasets. The AUC-ROC gap is 0.002 for both states relative to models trained on their corresponding synthetic fixtures. On Florida, the Texas-context model achieves higher F1 (0.965 vs.\ 0.948) in this setup. Because every fixture uses the same physics-informed synthetic target generator, these results are preliminary within-generator transfer observations; they do not establish generalization to measured outages across utilities or climates.
 
 \begin{table}[t]
 \centering
-\caption{Cross-state generalization (fair test-split comparison). TX model evaluated on CA/FL test sets vs.\ locally-trained models.}
+\caption{Simulated state-context transfer comparison. TX-context model evaluated on CA/FL synthetic-target test sets vs.\ locally-trained models.}
 \label{tab:crossstate}
 \begin{tabular}{@{}llcc@{}}
 \toprule
@@ -454,11 +454,11 @@ The overwhelming importance of temporal features ($\Delta$AUC = 0.479) reflects 
 
 \subsection{Role of Compound Features}
 
-While compound features show negligible aggregate AUC-ROC impact ($\Delta < 0.001$), this result must be interpreted carefully. The compound severity index ranks 18th among 138 features, above many individual weather and infrastructure covariates. Its value is concentrated in specific multi-hazard scenarios (e.g., wind--flood co-occurrence during Texas thunderstorm complexes) that constitute a small fraction of the test set. In a dataset with 11.2\% positive rate dominated by single-hazard events with strong temporal persistence, the marginal contribution of compound features is naturally diluted. We anticipate compound features would show greater impact in regions with frequent multi-hazard exposure (e.g., Southeast Asia, Caribbean).
+Compound-feature ablation shows negligible aggregate AUC-ROC impact ($\Delta < 0.001$) in this benchmark. Because the stored XGBoost and LightGBM importance values use different scales, we do not average them to assign a reliable cross-model rank to the compound severity index. The feature family is active in a small number of multi-hazard scenarios (e.g., wind--flood co-occurrence during Texas thunderstorm complexes), but measured multi-hazard outage data are needed to determine whether it adds practical predictive value.
 
 \subsection{Operational Value of Calibrated Uncertainty}
 
-With ECE of 0.004, operators can interpret predicted probabilities at face value. At threshold 0.39, the ensemble achieves perfect precision at 0.90 recall---every predicted outage was a true positive, while 90\% of actual outages were detected. The remaining 10\% of missed outages correspond to low-confidence predictions (high epistemic uncertainty), giving operators a principled basis for adjusting the alert threshold based on the cost asymmetry of false positives vs.\ missed outages.
+On the synthetic-target hold-out set, isotonic calibration yields ECE of 0.004. At threshold 0.39, the ensemble reaches precision 1.00 and recall 0.90 against those generated labels. These values demonstrate the calibration and threshold-selection workflow, but they must not be interpreted as operator-ready probabilities until the model is evaluated on measured utility outages.
 
 \subsection{Limitations}
 
@@ -472,18 +472,20 @@ With ECE of 0.004, operators can interpret predicted probabilities at face value
 
 \subsection{Reproducibility}
 
-All code, trained models, processed datasets, and evaluation scripts are publicly available at https://github.com/DarthAether/outage-prediction-system. The complete pipeline---from raw NOAA CSV to trained ensemble with evaluation metrics---can be reproduced with:
+Code, trained artifacts, processed research fixtures, and evaluation scripts are publicly available at https://github.com/DarthAether/outage-prediction-system. The tracked processed fixture can be used to rerun model training and evaluation with:
 \begin{verbatim}
-python scripts/build_dataset.py --states TX
-python scripts/train.py --ablation --bootstrap
+python scripts/train.py --dataset \
+  data/processed/training_dataset.parquet \
+  --ablation --bootstrap
 \end{verbatim}
+Rebuilding from source additionally requires downloading the NOAA Storm Events details CSV into \texttt{data/raw}; the current dataset builder does not perform that download automatically.
 
 %% ============================================================
 %% IX. CONCLUSION
 %% ============================================================
 \section{Conclusion}\label{sec:conclusion}
 
-We presented a power outage prediction framework combining compound weather event interaction features, calibrated ensemble uncertainty, and state-agnostic configuration-driven deployment. Evaluated on 12{,}000 samples with 138 features derived from NOAA Storm Events, the XGBoost/LightGBM ensemble achieves AUC-ROC of 0.967 (95\% CI: 0.944--0.984) and F1 of 0.947 with perfect precision at 0.90 recall. Feature ablation confirms temporal features as the dominant predictor group ($\Delta$AUC = 0.479), while isotonic calibration reduces ECE from 0.267 to 0.004. Cross-state evaluation demonstrates that a Texas-trained model generalizes to California and Florida with AUC-ROC gaps of only 0.002, validating the state-agnostic design.
+We presented a research framework combining compound-weather interaction features, calibrated ensemble uncertainty, and configuration-driven simulated transfer experiments. Evaluated on 12{,}000 samples with 138 features and physics-informed synthetic outage targets, XGBoost reaches AUC-ROC 0.967, while the XGBoost/LightGBM probability average reaches AUC-ROC 0.966 (95\% bootstrap CI: 0.944--0.984) and F1 0.947 at threshold 0.39. Feature ablation identifies temporal features as the dominant predictor group ($\Delta$AUC = 0.479), while isotonic calibration reduces ECE from 0.267 to 0.004 in this setup. Transfer experiments across synthetic state-context fixtures show small AUC gaps, but measured cross-utility validation is required before drawing real-world generalization claims.
 
 Future work will pursue three directions: (1)~validation on real EAGLE-I outage data to assess performance on measured rather than simulated targets, (2)~incorporation of grid topology via graph neural networks for infrastructure-aware predictions, and (3)~integration of real-time NWS probabilistic forecast products for true operational deployment.
 

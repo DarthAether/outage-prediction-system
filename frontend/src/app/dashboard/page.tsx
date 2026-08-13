@@ -342,7 +342,7 @@ export default function DashboardPage() {
                   Interactive map requires Mapbox token
                 </p>
                 <p className="text-xs text-gray-600">
-                  Set NEXT_PUBLIC_MAPBOX_TOKEN to enable deck.gl visualization
+                  Geospatial visualization is planned for a later prototype phase
                 </p>
               </div>
             </div>

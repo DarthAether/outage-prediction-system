@@ -1,26 +1,22 @@
 from __future__ import annotations
 
-import asyncio
 import time
 from contextlib import asynccontextmanager
 
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.requests import Request
-from starlette.responses import JSONResponse
 
-from backend.src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
-from backend.src.api.v1.admin import router as admin_router
-from backend.src.api.v1.alerts import router as alerts_router
-from backend.src.api.v1.health import router as health_router
-from backend.src.api.v1.historical import router as historical_router
-from backend.src.api.v1.predictions import router as predictions_router
-from backend.src.config import load_app_config, load_region_config
-from backend.src.db.engine import _init_defaults as init_db
-from backend.src.ml.ensemble import OutageEnsemble
-from backend.src.ml.uncertainty import UncertaintyEstimator
-from backend.src.streaming.redis_client import RedisStreamClient
+from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
+from src.api.v1.admin import router as admin_router
+from src.api.v1.alerts import router as alerts_router
+from src.api.v1.health import router as health_router
+from src.api.v1.historical import router as historical_router
+from src.api.v1.predictions import router as predictions_router
+from src.config import load_app_config, load_region_config
+from src.db.engine import _init_defaults as init_db
+from src.ml.uncertainty import UncertaintyEstimator
+from src.streaming.redis_client import RedisStreamClient
 
 logger = structlog.get_logger(__name__)
 
@@ -88,20 +84,20 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     """Application factory for the Outage Prediction API."""
+    cfg = load_app_config()
     app = FastAPI(
         title="Outage Prediction API",
         version="1.0.0",
         description=(
-            "Real-time power outage risk prediction with uncertainty quantification. "
-            "Combines weather, grid, infrastructure, and socioeconomic data through "
-            "an ensemble of tree-based and temporal models."
+            "Research-prototype API for outage-risk experiments. The committed app "
+            "does not load a trained model at startup and is not an operational utility service."
         ),
         lifespan=lifespan,
     )
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=cfg.cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -114,11 +110,13 @@ def create_app() -> FastAPI:
     app.include_router(alerts_router, prefix=v1_prefix)
     app.include_router(historical_router, prefix=v1_prefix)
     app.include_router(health_router, prefix=v1_prefix)
-    app.include_router(admin_router, prefix=v1_prefix)
+    if cfg.enable_admin_routes:
+        app.include_router(admin_router, prefix=v1_prefix)
 
     @app.get("/")
     async def root() -> dict:
         return {
+            "status": "ok",
             "service": "Outage Prediction API",
             "version": "1.0.0",
             "docs": "/docs",

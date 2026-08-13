@@ -172,7 +172,7 @@ a:hover{text-decoration:underline}
       <div class="brand-icon">G</div>
       <h1>Grid<span>Shield</span> AI</h1>
     </div>
-    <div class="ieee-badge">IEEE SPICES 2026</div>
+    <div class="ieee-badge">MANUSCRIPT UNDER REVIEW</div>
   </div>
 </header>
 
@@ -182,7 +182,7 @@ a:hover{text-decoration:underline}
   <button class="tab-btn" data-tab="predict">Predict</button>
   <button class="tab-btn" data-tab="performance">Performance</button>
   <button class="tab-btn" data-tab="features">Features</button>
-  <button class="tab-btn" data-tab="crossstate">Cross-State</button>
+  <button class="tab-btn" data-tab="crossstate">Simulated Transfer</button>
   <button class="tab-btn" data-tab="data">Data</button>
 </nav>
 
@@ -193,26 +193,26 @@ a:hover{text-decoration:underline}
 <div class="tab-content active" id="tab-overview">
 
   <div class="hero fade-in">
-    <div class="hero-metric" id="hero-auc">0.967</div>
-    <div class="hero-label">Ensemble AUC-ROC on Texas Hold-Out Test Set</div>
-    <div class="hero-sub">95% CI: [0.944, 0.984] via 200-round bootstrap</div>
+    <div class="hero-metric" id="hero-auc">0.966</div>
+    <div class="hero-label">Two-tree ensemble AUC-ROC on a synthetic-target hold-out set</div>
+    <div class="hero-sub">95% CI: [0.944, 0.984] via 1,000-round bootstrap</div>
   </div>
 
   <div class="stats-grid fade-in">
     <div class="stat-card indigo">
       <div class="stat-label">F1 Score</div>
       <div class="stat-value" id="ov-f1">0.947</div>
-      <div class="stat-sub">Ensemble (calibrated)</div>
+      <div class="stat-sub">Threshold 0.39</div>
     </div>
     <div class="stat-card green">
       <div class="stat-label">Precision</div>
       <div class="stat-value" id="ov-prec">1.000</div>
-      <div class="stat-sub">Zero false positives</div>
+      <div class="stat-sub">Synthetic hold-out set</div>
     </div>
     <div class="stat-card cyan">
       <div class="stat-label">Recall</div>
       <div class="stat-value" id="ov-rec">0.900</div>
-      <div class="stat-sub">90% outages detected</div>
+      <div class="stat-sub">90% synthetic positives detected</div>
     </div>
     <div class="stat-card orange">
       <div class="stat-label">ECE (Calibrated)</div>
@@ -227,15 +227,15 @@ a:hover{text-decoration:underline}
 GridShield AI  -  Power Outage Prediction Pipeline
 ====================================================
 
-  NOAA Storm Events     EAGLE-I Outages      ERCOT Grid       Census ACS
-       |                     |                   |                |
-       +----------+----------+-------------------+----------------+
+  NOAA-derived weather inputs     Simulated outage, load, and context fields
+                |                                  |
+                +----------------+-----------------+
                   |
-          [ H3 Hexagonal Spatial Index (resolution 5) ]
+          [ H3 Hexagonal Spatial Index (resolution 7) ]
                   |
      +------------+-------------+------------------+
      |            |             |                  |
-  Weather     Temporal      Infrastructure     Compound
+  Weather     Temporal      Context            Compound
   Features    Features      Features           Event Features
      |            |             |                  |
      +------------+-------------+------------------+
@@ -248,13 +248,11 @@ GridShield AI  -  Power Outage Prediction Pipeline
          |                 |
          +--------+--------+
                   |
-      [ Stacking Ensemble (Logistic Meta-Learner) ]
+       [ XGBoost + LightGBM Probability Average ]
                   |
       [ Isotonic Calibration ]
                   |
-      [ MC Dropout Uncertainty Estimation ]
-                  |
-    Calibrated Probability + Confidence Interval
+       Calibrated Probability + Confidence Interval
     </div>
   </div>
 
@@ -262,12 +260,11 @@ GridShield AI  -  Power Outage Prediction Pipeline
     <div class="section-title"><span class="dot"></span> Key Highlights</div>
     <ul class="highlights">
       <li>138 engineered features spanning weather, temporal, infrastructure, and compound event categories</li>
-      <li>H3 hexagonal spatial indexing at resolution 5 (~252 km<sup>2</sup> cells) for uniform spatial analysis</li>
-      <li>Novel compound event detection: co-occurrence, sequential storm, and infrastructure fatigue features</li>
+      <li>H3 hexagonal spatial indexing at resolution 7 for uniform spatial analysis</li>
+      <li>Compound-event features covering co-occurrence and sequential storm patterns</li>
       <li>Isotonic calibration reduces ECE from 0.267 to 0.004 (98.5% improvement)</li>
-      <li>Cross-state generalization: AUC gaps of only 0.002-0.007 when transferring TX model to CA and FL</li>
-      <li>Production-ready uncertainty quantification via MC Dropout with epistemic uncertainty bounds</li>
-      <li>Validated on 12,000 Texas samples, 10,000 California samples, and 10,000 Florida samples</li>
+      <li>12,000-sample research benchmark using physics-informed synthetic outage targets</li>
+      <li>Measured utility-outage validation remains future work; this dashboard is a research demonstration</li>
     </ul>
   </div>
 
@@ -280,7 +277,7 @@ GridShield AI  -  Power Outage Prediction Pipeline
     <div class="section-title"><span class="dot"></span> Outage Risk Simulator</div>
     <p style="color:var(--text3);font-size:14px;margin-bottom:24px">
       Client-side simulation using weighted feature contributions derived from SHAP analysis.
-      For demonstration purposes only — production inference uses the full 138-feature pipeline.
+      For demonstration purposes only — it does not run the evaluated 138-feature research pipeline.
     </p>
   </div>
 
@@ -380,9 +377,9 @@ GridShield AI  -  Power Outage Prediction Pipeline
 <div class="tab-content" id="tab-features">
 
   <div class="section fade-in">
-    <div class="section-title"><span class="dot"></span> Feature Importance (Top 20)</div>
+    <div class="section-title"><span class="dot"></span> XGBoost Feature Importance (Top 20)</div>
     <div class="chart-card">
-      <h3>Average Importance (XGBoost + LightGBM)</h3>
+      <h3>Single-model importance; cross-model values are not averaged because their stored scales differ</h3>
       <div class="chart-wrap" style="max-height:600px"><canvas id="chart-importance"></canvas></div>
     </div>
   </div>
@@ -411,19 +408,18 @@ GridShield AI  -  Power Outage Prediction Pipeline
 <div class="tab-content" id="tab-crossstate">
 
   <div class="section fade-in">
-    <div class="section-title"><span class="dot"></span> Cross-State Generalization</div>
+    <div class="section-title"><span class="dot"></span> Simulated Transfer Experiment</div>
     <p style="color:var(--text3);font-size:14px;margin-bottom:20px">
-      Models trained on Texas data are evaluated on California and Florida to measure generalization.
-      Local models (trained and tested on same state) serve as baselines.
+      These exploratory comparisons use separately generated synthetic-target state fixtures. They do not demonstrate transfer to measured utility-outage data.
     </p>
     <div class="chart-card">
-      <h3>AUC-ROC: TX-Trained vs Local Models by State</h3>
+      <h3>Synthetic-target AUC-ROC: TX-Trained vs Local Models by State</h3>
       <div class="chart-wrap"><canvas id="chart-crossstate"></canvas></div>
     </div>
   </div>
 
   <div class="section fade-in">
-    <div class="section-title"><span class="dot"></span> Generalization Gaps</div>
+    <div class="section-title"><span class="dot"></span> Simulated Transfer Gaps</div>
     <div class="table-wrap">
       <table class="data-table" id="table-gaps">
         <thead><tr><th>State</th><th>Model</th><th>TX-Trained AUC</th><th>Local AUC</th><th>AUC Gap</th><th>Assessment</th></tr></thead>
@@ -431,7 +427,7 @@ GridShield AI  -  Power Outage Prediction Pipeline
       </table>
     </div>
     <div style="margin-top:16px;padding:16px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;font-size:14px;color:var(--green)">
-      Key Finding: AUC gaps of only 0.002&ndash;0.007 across states for XGBoost, confirming strong geographic transferability.
+      Experimental observation: small AUC gaps appeared within this simulated setup. Measured cross-utility validation is required before drawing real-world conclusions.
     </div>
   </div>
 
@@ -456,7 +452,7 @@ GridShield AI  -  Power Outage Prediction Pipeline
       <div class="stat-card cyan">
         <div class="stat-label">Positive Rate</div>
         <div class="stat-value" id="ds-pos">11.2%</div>
-        <div class="stat-sub">Outage occurrence</div>
+        <div class="stat-sub">Synthetic positive rate</div>
       </div>
       <div class="stat-card orange">
         <div class="stat-label">Train / Val / Test</div>
@@ -481,19 +477,19 @@ GridShield AI  -  Power Outage Prediction Pipeline
     <div class="two-col">
       <div class="source-card">
         <h4>NOAA Storm Events Database</h4>
-        <p>Severe weather events, magnitudes, damage estimates, and geographic coordinates (2019-2023)</p>
+        <p>Severe weather events, magnitudes, damage estimates, and geographic coordinates used by the 2022 benchmark</p>
       </div>
       <div class="source-card">
-        <h4>DOE EAGLE-I</h4>
-        <p>Real-time power outage data from utilities — customer counts and restoration timestamps</p>
+        <h4>Physics-Informed Synthetic Targets</h4>
+        <p>Simulated outage labels correlated with weather severity for the thesis benchmark</p>
       </div>
       <div class="source-card">
-        <h4>ERCOT Grid Data</h4>
-        <p>Texas grid load, reserve margins, and generation capacity at hourly resolution</p>
+        <h4>Simulated Grid Context</h4>
+        <p>Modeled load, reserve margin, and related context features</p>
       </div>
       <div class="source-card">
-        <h4>U.S. Census ACS</h4>
-        <p>Socioeconomic indicators — population density, housing age, income, and infrastructure proxies</p>
+        <h4>Simulated Context Features</h4>
+        <p>Modeled socioeconomic and infrastructure proxy fields used by the research pipeline</p>
       </div>
     </div>
   </div>
@@ -506,12 +502,12 @@ GridShield AI  -  Power Outage Prediction Pipeline
 <footer class="footer">
   <div class="footer-inner">
     <div class="footer-links">
-      <a href="https://github.com/vjk-research/outage-prediction-system" target="_blank">GitHub</a>
+      <a href="https://github.com/DarthAether/outage-prediction-system" target="_blank">GitHub</a>
       <a href="architecture.html">Architecture</a>
       <a href="api-reference.html">API Reference</a>
       <a href="deployment-guide.html">Deployment Guide</a>
     </div>
-    <p>GridShield AI &mdash; Power Outage Prediction System &mdash; IEEE SPICES 2026</p>
+    <p>GridShield AI &mdash; three-student thesis research prototype &mdash; manuscript under review</p>
     <p style="margin-top:4px">Built with XGBoost, LightGBM, and scikit-learn. Dashboard rendered with Chart.js.</p>
   </div>
 </footer>
@@ -689,14 +685,18 @@ function buildReliabilityChart() {
    FEATURE IMPORTANCE CHART
    ============================ */
 function buildImportanceChart() {
-  const feats = (DATA.features || []).slice(0, 20).reverse();
+  const feats = (DATA.features || [])
+    .slice()
+    .sort((a, b) => parseFloat(b.xgb_importance) - parseFloat(a.xgb_importance))
+    .slice(0, 20)
+    .reverse();
   new Chart(document.getElementById('chart-importance'), {
     type: 'bar',
     data: {
       labels: feats.map(f => f.feature.replace(/_/g, ' ')),
       datasets: [{
-        label: 'Avg Importance',
-        data: feats.map(f => parseFloat(f.avg_importance)),
+        label: 'XGBoost Importance',
+        data: feats.map(f => parseFloat(f.xgb_importance)),
         backgroundColor: CHART_COLORS.indigo + 'bb',
         borderColor: CHART_COLORS.indigo,
         borderWidth: 1,

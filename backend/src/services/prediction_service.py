@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import numpy as np
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.api.schemas.predictions import (
+from src.api.schemas.predictions import (
     PredictionResult,
     UncertaintyEstimate,
 )
-from backend.src.db.repositories import PredictionRepository
-from backend.src.ml.ensemble import OutageEnsemble
-from backend.src.ml.uncertainty import UncertaintyEstimator
+from src.db.repositories import PredictionRepository
+from src.ml.ensemble import OutageEnsemble
+from src.ml.uncertainty import UncertaintyEstimator
 
 logger = structlog.get_logger(__name__)
 
@@ -86,7 +86,7 @@ class PredictionService:
         features_override: dict[str, float] | None = None,
     ) -> PredictionResult:
         prediction_id = str(uuid.uuid4())
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
 
         features = self._compute_features(h3_cell, region, now, features_override)
         feature_names = sorted(features.keys())
@@ -170,9 +170,7 @@ class PredictionService:
 
         return features
 
-    def _run_ensemble(
-        self, x_tabular: np.ndarray
-    ) -> tuple[float, dict[str, float]]:
+    def _run_ensemble(self, x_tabular: np.ndarray) -> tuple[float, dict[str, float]]:
         ensemble_proba = self._ensemble.predict_proba(X_tabular=x_tabular)
         risk_prob = float(np.clip(ensemble_proba[0], 0.0, 1.0))
 
@@ -202,10 +200,13 @@ class PredictionService:
         load_score = max(0.0, features.get("load_capacity_ratio", 0.7) - 0.7) / 0.3
         infra_age = features.get("avg_line_age_years", 20.0) / 50.0
 
-        risk_prob = float(np.clip(
-            0.3 * weather_score + 0.25 * outage_score + 0.25 * load_score + 0.2 * infra_age,
-            0.0, 1.0,
-        ))
+        risk_prob = float(
+            np.clip(
+                0.3 * weather_score + 0.25 * outage_score + 0.25 * load_score + 0.2 * infra_age,
+                0.0,
+                1.0,
+            )
+        )
         spread = 0.15
         return risk_prob, {
             "lower": max(0.0, risk_prob - spread),
@@ -256,16 +257,18 @@ class PredictionService:
         timestamp: datetime,
     ) -> None:
         try:
-            await self._pred_repo.insert({
-                "predicted_at": timestamp,
-                "h3_index_res7": h3_cell,
-                "region_code": region,
-                "model_version": MODEL_VERSION,
-                "risk_probability": risk_prob,
-                "uncertainty_lower": uncertainty.lower,
-                "uncertainty_upper": uncertainty.upper,
-                "risk_level": risk_level,
-                "features_snapshot": features,
-            })
+            await self._pred_repo.insert(
+                {
+                    "predicted_at": timestamp,
+                    "h3_index_res7": h3_cell,
+                    "region_code": region,
+                    "model_version": MODEL_VERSION,
+                    "risk_probability": risk_prob,
+                    "uncertainty_lower": uncertainty.lower,
+                    "uncertainty_upper": uncertainty.upper,
+                    "risk_level": risk_level,
+                    "features_snapshot": features,
+                }
+            )
         except Exception:
             logger.warning("prediction.persist_failed", exc_info=True)

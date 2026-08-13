@@ -6,7 +6,7 @@ including temperature, wind speed, gusts, precipitation, and visibility
 from stations across the US.
 """
 
-from datetime import date, datetime
+from datetime import date
 
 import h3
 import httpx
@@ -22,21 +22,21 @@ logger = structlog.get_logger(__name__)
 IOWA_MESONET_BASE = "https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py"
 
 TX_STATIONS: dict[str, tuple[float, float]] = {
-    "KIAH": (29.9844, -95.3414),   # Houston Intercontinental
-    "KHOU": (29.6454, -95.2789),   # Houston Hobby
-    "KDFW": (32.8968, -97.0380),   # Dallas/Fort Worth
-    "KDAL": (32.8471, -96.8518),   # Dallas Love Field
-    "KSAT": (29.5337, -98.4698),   # San Antonio
-    "KAUS": (30.1945, -97.6699),   # Austin-Bergstrom
+    "KIAH": (29.9844, -95.3414),  # Houston Intercontinental
+    "KHOU": (29.6454, -95.2789),  # Houston Hobby
+    "KDFW": (32.8968, -97.0380),  # Dallas/Fort Worth
+    "KDAL": (32.8471, -96.8518),  # Dallas Love Field
+    "KSAT": (29.5337, -98.4698),  # San Antonio
+    "KAUS": (30.1945, -97.6699),  # Austin-Bergstrom
     "KELP": (31.8072, -106.3776),  # El Paso
     "KMAF": (31.9425, -102.2019),  # Midland
     "KLBB": (33.6636, -101.8228),  # Lubbock
     "KAMA": (35.2194, -101.7060),  # Amarillo
-    "KCRP": (27.7704, -97.5012),   # Corpus Christi
-    "KMCJ": (26.1759, -97.9614),   # McAllen
-    "KBPT": (29.9508, -94.0207),   # Beaumont/Port Arthur
-    "KGGG": (32.3840, -94.7115),   # Longview
-    "KACT": (31.6113, -97.2305),   # Waco
+    "KCRP": (27.7704, -97.5012),  # Corpus Christi
+    "KMCJ": (26.1759, -97.9614),  # McAllen
+    "KBPT": (29.9508, -94.0207),  # Beaumont/Port Arthur
+    "KGGG": (32.3840, -94.7115),  # Longview
+    "KACT": (31.6113, -97.2305),  # Waco
 }
 
 CA_STATIONS: dict[str, tuple[float, float]] = {
@@ -51,19 +51,17 @@ CA_STATIONS: dict[str, tuple[float, float]] = {
 }
 
 FL_STATIONS: dict[str, tuple[float, float]] = {
-    "KMIA": (25.7959, -80.2870),   # Miami
-    "KFLL": (26.0726, -80.1527),   # Fort Lauderdale
-    "KTPA": (27.9755, -82.5332),   # Tampa
-    "KMCO": (28.4294, -81.3090),   # Orlando
-    "KJAX": (30.4941, -81.6879),   # Jacksonville
-    "KRSW": (26.5362, -81.7552),   # Fort Myers
-    "KPBI": (26.6832, -80.0956),   # West Palm Beach
-    "KTLH": (30.3965, -84.3503),   # Tallahassee
+    "KMIA": (25.7959, -80.2870),  # Miami
+    "KFLL": (26.0726, -80.1527),  # Fort Lauderdale
+    "KTPA": (27.9755, -82.5332),  # Tampa
+    "KMCO": (28.4294, -81.3090),  # Orlando
+    "KJAX": (30.4941, -81.6879),  # Jacksonville
+    "KRSW": (26.5362, -81.7552),  # Fort Myers
+    "KPBI": (26.6832, -80.0956),  # West Palm Beach
+    "KTLH": (30.3965, -84.3503),  # Tallahassee
 }
 
-ALL_STATIONS: dict[str, tuple[float, float]] = {
-    **TX_STATIONS, **CA_STATIONS, **FL_STATIONS
-}
+ALL_STATIONS: dict[str, tuple[float, float]] = {**TX_STATIONS, **CA_STATIONS, **FL_STATIONS}
 
 STATE_STATIONS: dict[str, dict[str, tuple[float, float]]] = {
     "TX": TX_STATIONS,
@@ -141,14 +139,12 @@ class MetarIngestor(BaseIngestor):
                 }
 
                 for sid in batch_stations:
-                    params[f"station"] = sid
+                    params["station"] = sid
 
                 for sid in batch_stations:
                     try:
                         station_params = {**params, "station": sid}
-                        response = await client.get(
-                            IOWA_MESONET_BASE, params=station_params
-                        )
+                        response = await client.get(IOWA_MESONET_BASE, params=station_params)
                         response.raise_for_status()
 
                         text_content = response.text
@@ -157,6 +153,7 @@ class MetarIngestor(BaseIngestor):
                             continue
 
                         from io import StringIO
+
                         df = pd.read_csv(StringIO(text_content), low_memory=False)
 
                         if not df.empty:
@@ -178,13 +175,9 @@ class MetarIngestor(BaseIngestor):
                             status=e.response.status_code,
                         )
                     except httpx.RequestError as e:
-                        logger.error(
-                            "metar.request_error", station=sid, error=str(e)
-                        )
+                        logger.error("metar.request_error", station=sid, error=str(e))
                     except Exception as e:
-                        logger.error(
-                            "metar.parse_error", station=sid, error=str(e)
-                        )
+                        logger.error("metar.parse_error", station=sid, error=str(e))
 
         if not all_frames:
             return pd.DataFrame()
@@ -202,9 +195,7 @@ class MetarIngestor(BaseIngestor):
 
         if ts_col:
             combined[ts_col] = pd.to_datetime(combined[ts_col], errors="coerce", utc=True)
-            mask = (combined[ts_col].dt.date >= start_date) & (
-                combined[ts_col].dt.date <= end_date
-            )
+            mask = (combined[ts_col].dt.date >= start_date) & (combined[ts_col].dt.date <= end_date)
             combined = combined.loc[mask]
             if ts_col != "valid":
                 combined.rename(columns={ts_col: "valid"}, inplace=True)
@@ -220,15 +211,15 @@ class MetarIngestor(BaseIngestor):
         if "valid" not in df.columns and "timestamp" not in df.columns:
             errors.append("Missing timestamp column (valid or timestamp)")
             return df.head(0), ValidationResult(
-                valid=False, total_records=total,
-                valid_records=0, invalid_records=total, errors=errors,
+                valid=False,
+                total_records=total,
+                valid_records=0,
+                invalid_records=total,
+                errors=errors,
             )
 
         ts_col = "valid" if "valid" in df.columns else "timestamp"
         valid_mask = df[ts_col].notna()
-
-        for col, m_val in [("M", None)]:
-            pass
 
         numeric_ranges: dict[str, tuple[float, float]] = {
             "tmpf": (-80.0, 140.0),
@@ -248,7 +239,9 @@ class MetarIngestor(BaseIngestor):
                 range_valid = df[col].isna() | ((df[col] >= low) & (df[col] <= high))
                 out_of_range = (~range_valid & valid_mask).sum()
                 if out_of_range > 0:
-                    warnings.append(f"{out_of_range} records with {col} out of range [{low}, {high}]")
+                    warnings.append(
+                        f"{out_of_range} records with {col} out of range [{low}, {high}]"
+                    )
                 valid_mask = valid_mask & range_valid
 
         if "station" in df.columns or "station_id" in df.columns:
@@ -324,12 +317,8 @@ class MetarIngestor(BaseIngestor):
             result["lon"] = pd.to_numeric(df[lon_col], errors="coerce")
         else:
             stn_col = "station" if "station" in df.columns else "station_id"
-            result["lat"] = df[stn_col].map(
-                lambda s: ALL_STATIONS.get(s, (None, None))[0]
-            )
-            result["lon"] = df[stn_col].map(
-                lambda s: ALL_STATIONS.get(s, (None, None))[1]
-            )
+            result["lat"] = df[stn_col].map(lambda s: ALL_STATIONS.get(s, (None, None))[0])
+            result["lon"] = df[stn_col].map(lambda s: ALL_STATIONS.get(s, (None, None))[1])
 
         h3_res7: list[str | None] = []
         h3_res9: list[str | None] = []
@@ -358,32 +347,48 @@ class MetarIngestor(BaseIngestor):
 
         records: list[dict] = []
         for _, row in df.iterrows():
-            records.append({
-                "event_time": row["event_time"],
-                "source": row["source"],
-                "event_type": row["event_type"],
-                "magnitude": float(row["magnitude"]) if pd.notna(row.get("magnitude")) else None,
-                "magnitude_type": row.get("magnitude_type"),
-                "h3_index_res7": row.get("h3_index_res7"),
-                "h3_index_res9": row.get("h3_index_res9"),
-                "station_id": str(row.get("station_id", "")),
-                "temperature_f": float(row["temperature_f"]) if pd.notna(row.get("temperature_f")) else None,
-                "temperature_c": float(row["temperature_c"]) if pd.notna(row.get("temperature_c")) else None,
-                "wind_speed_mph": float(row["wind_speed_mph"]) if pd.notna(row.get("wind_speed_mph")) else None,
-                "gust_speed_mph": float(row["gust_speed_mph"]) if pd.notna(row.get("gust_speed_mph")) else None,
-                "wind_direction_deg": (
-                    float(row["wind_direction_deg"])
-                    if pd.notna(row.get("wind_direction_deg"))
-                    else None
-                ),
-                "precip_in": float(row["precip_in"]) if pd.notna(row.get("precip_in")) else None,
-                "visibility_mi": float(row["visibility_mi"]) if pd.notna(row.get("visibility_mi")) else None,
-                "relative_humidity": (
-                    float(row["relative_humidity"])
-                    if pd.notna(row.get("relative_humidity"))
-                    else None
-                ),
-            })
+            records.append(
+                {
+                    "event_time": row["event_time"],
+                    "source": row["source"],
+                    "event_type": row["event_type"],
+                    "magnitude": float(row["magnitude"])
+                    if pd.notna(row.get("magnitude"))
+                    else None,
+                    "magnitude_type": row.get("magnitude_type"),
+                    "h3_index_res7": row.get("h3_index_res7"),
+                    "h3_index_res9": row.get("h3_index_res9"),
+                    "station_id": str(row.get("station_id", "")),
+                    "temperature_f": float(row["temperature_f"])
+                    if pd.notna(row.get("temperature_f"))
+                    else None,
+                    "temperature_c": float(row["temperature_c"])
+                    if pd.notna(row.get("temperature_c"))
+                    else None,
+                    "wind_speed_mph": float(row["wind_speed_mph"])
+                    if pd.notna(row.get("wind_speed_mph"))
+                    else None,
+                    "gust_speed_mph": float(row["gust_speed_mph"])
+                    if pd.notna(row.get("gust_speed_mph"))
+                    else None,
+                    "wind_direction_deg": (
+                        float(row["wind_direction_deg"])
+                        if pd.notna(row.get("wind_direction_deg"))
+                        else None
+                    ),
+                    "precip_in": float(row["precip_in"])
+                    if pd.notna(row.get("precip_in"))
+                    else None,
+                    "visibility_mi": float(row["visibility_mi"])
+                    if pd.notna(row.get("visibility_mi"))
+                    else None,
+                    "relative_humidity": (
+                        float(row["relative_humidity"])
+                        if pd.notna(row.get("relative_humidity"))
+                        else None
+                    ),
+                }
+            )
 
         batch_size = 1000
         total_inserted = 0

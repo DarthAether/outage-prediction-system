@@ -7,7 +7,7 @@ ingestors perform.
 """
 
 import pandera as pa
-from pandera import Column, Check, Index
+from pandera import Check, Column
 
 
 class WeatherEventSchema(pa.DataFrameSchema):

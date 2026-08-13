@@ -1,5 +1,8 @@
 # Model Card: Outage Prediction Ensemble v1
 
+> [!WARNING]
+> **Experimental implementation note.** This document describes an exploratory three-model architecture and illustrative evaluation scenario implemented in the repository. It is not the evaluated two-tree thesis benchmark reported in the root README, and the historical EAGLE-I/utility evaluation described below has not been independently reproduced from the artifacts in this repository. Do not cite the metrics in this document as verified project results. The thesis benchmark instead uses physics-informed synthetic outage targets and is disclosed separately in the README.
+
 ## Model Details
 
 ### Overview
@@ -12,7 +15,7 @@
 | Task | Binary classification (outage risk within 24-hour horizon) |
 | Output | Calibrated probability [0, 1] with decomposed uncertainty |
 | Framework | scikit-learn, XGBoost, LightGBM, PyTorch |
-| License | Proprietary |
+| License | Apache-2.0 (repository license) |
 | Date | 2025-03 |
 
 ### Architecture
@@ -150,9 +153,9 @@ The model is currently trained and validated on Texas data. Performance is expec
 
 ---
 
-## Metrics
+## Illustrative Metrics (Not Reproduced)
 
-All metrics are computed on the held-out temporal test set (2023-07 through 2024-12). Confidence intervals are 95% bootstrap intervals (1,000 resamples).
+The table below records the experimental scenario originally documented for this architecture. The repository does not contain sufficient measured-outage artifacts to reproduce these values, so they must not be presented as verified performance.
 
 | Metric | Value | 95% CI |
 |--------|-------|--------|

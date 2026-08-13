@@ -7,9 +7,9 @@ from typing import Any
 import structlog
 from redis.asyncio import Redis
 
-from backend.src.api.schemas.alerts import AlertResponse
-from backend.src.api.schemas.predictions import PredictionResult
-from backend.src.config import RedisConfig
+from src.api.schemas.alerts import AlertResponse
+from src.api.schemas.predictions import PredictionResult
+from src.config import RedisConfig
 
 logger = structlog.get_logger(__name__)
 
@@ -88,9 +88,7 @@ class RedisStreamClient:
             "risk_level": prediction.risk_level,
             "computed_at": prediction.computed_at.isoformat(),
         }
-        message_id = await self._redis.xadd(
-            self._config.stream_name, entry, maxlen=100_000
-        )
+        message_id = await self._redis.xadd(self._config.stream_name, entry, maxlen=100_000)
         return message_id
 
     async def subscribe_alerts(self) -> AsyncGenerator[AlertResponse, None]:

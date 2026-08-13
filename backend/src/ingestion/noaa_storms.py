@@ -22,28 +22,30 @@ from .base import BaseIngestor, ValidationResult
 
 logger = structlog.get_logger(__name__)
 
-SEVERE_EVENT_TYPES = frozenset([
-    "Thunderstorm Wind",
-    "High Wind",
-    "Heavy Snow",
-    "Ice Storm",
-    "Winter Storm",
-    "Winter Weather",
-    "Hurricane",
-    "Hurricane (Typhoon)",
-    "Tornado",
-    "Hail",
-    "Excessive Heat",
-    "Heat",
-    "Flash Flood",
-    "Flood",
-    "Coastal Flood",
-    "Tropical Storm",
-    "Blizzard",
-    "Drought",
-    "Wildfire",
-    "Strong Wind",
-])
+SEVERE_EVENT_TYPES = frozenset(
+    [
+        "Thunderstorm Wind",
+        "High Wind",
+        "Heavy Snow",
+        "Ice Storm",
+        "Winter Storm",
+        "Winter Weather",
+        "Hurricane",
+        "Hurricane (Typhoon)",
+        "Tornado",
+        "Hail",
+        "Excessive Heat",
+        "Heat",
+        "Flash Flood",
+        "Flood",
+        "Coastal Flood",
+        "Tropical Storm",
+        "Blizzard",
+        "Drought",
+        "Wildfire",
+        "Strong Wind",
+    ]
+)
 
 DAMAGE_MULTIPLIERS = {"K": 1_000, "M": 1_000_000, "B": 1_000_000_000}
 
@@ -129,9 +131,18 @@ class NoaaStormsIngestor(BaseIngestor):
 
         if region_code and "STATE_FIPS" in combined.columns:
             state_fips_map = {
-                "TX": "48", "CA": "06", "FL": "12", "NY": "36",
-                "PA": "42", "OH": "39", "IL": "17", "GA": "13",
-                "NC": "37", "MI": "26", "NJ": "34", "VA": "51",
+                "TX": "48",
+                "CA": "06",
+                "FL": "12",
+                "NY": "36",
+                "PA": "42",
+                "OH": "39",
+                "IL": "17",
+                "GA": "13",
+                "NC": "37",
+                "MI": "26",
+                "NJ": "34",
+                "VA": "51",
             }
             fips = state_fips_map.get(region_code)
             if fips:
@@ -151,8 +162,11 @@ class NoaaStormsIngestor(BaseIngestor):
             if col not in df.columns:
                 errors.append(f"Missing required column: {col}")
                 return df.head(0), ValidationResult(
-                    valid=False, total_records=total,
-                    valid_records=0, invalid_records=total, errors=errors,
+                    valid=False,
+                    total_records=total,
+                    valid_records=0,
+                    invalid_records=total,
+                    errors=errors,
                 )
 
         valid_mask = df["BEGIN_DATE_TIME"].notna() & df["EVENT_TYPE"].notna()
@@ -209,17 +223,17 @@ class NoaaStormsIngestor(BaseIngestor):
         result["damage_crops"] = df.get("DAMAGE_CROPS", pd.Series(dtype=str)).apply(
             parse_damage_value
         )
-        result["injuries"] = pd.to_numeric(
-            df.get("INJURIES_DIRECT", 0), errors="coerce"
-        ).fillna(0).astype(int) + pd.to_numeric(
-            df.get("INJURIES_INDIRECT", 0), errors="coerce"
-        ).fillna(0).astype(int)
+        result["injuries"] = pd.to_numeric(df.get("INJURIES_DIRECT", 0), errors="coerce").fillna(
+            0
+        ).astype(int) + pd.to_numeric(df.get("INJURIES_INDIRECT", 0), errors="coerce").fillna(
+            0
+        ).astype(int)
 
-        result["deaths"] = pd.to_numeric(
-            df.get("DEATHS_DIRECT", 0), errors="coerce"
-        ).fillna(0).astype(int) + pd.to_numeric(
-            df.get("DEATHS_INDIRECT", 0), errors="coerce"
-        ).fillna(0).astype(int)
+        result["deaths"] = pd.to_numeric(df.get("DEATHS_DIRECT", 0), errors="coerce").fillna(
+            0
+        ).astype(int) + pd.to_numeric(df.get("DEATHS_INDIRECT", 0), errors="coerce").fillna(
+            0
+        ).astype(int)
 
         result["narrative"] = df.get("EVENT_NARRATIVE", "")
         result["episode_id"] = pd.to_numeric(df.get("EPISODE_ID"), errors="coerce")
@@ -251,23 +265,31 @@ class NoaaStormsIngestor(BaseIngestor):
 
         records = []
         for _, row in df.iterrows():
-            records.append({
-                "event_time": row["event_time"],
-                "source": row["source"],
-                "event_type": row["event_type"],
-                "magnitude": float(row["magnitude"]) if pd.notna(row["magnitude"]) else None,
-                "magnitude_type": row.get("magnitude_type"),
-                "h3_index_res7": row.get("h3_index_res7"),
-                "h3_index_res9": row.get("h3_index_res9"),
-                "state_fips": row.get("state_fips"),
-                "county_fips": row.get("county_fips"),
-                "damage_property": float(row["damage_property"]) if pd.notna(row["damage_property"]) else 0,
-                "damage_crops": float(row["damage_crops"]) if pd.notna(row["damage_crops"]) else 0,
-                "injuries": int(row.get("injuries", 0)),
-                "deaths": int(row.get("deaths", 0)),
-                "narrative": str(row.get("narrative", "")),
-                "episode_id": int(row["episode_id"]) if pd.notna(row.get("episode_id")) else None,
-            })
+            records.append(
+                {
+                    "event_time": row["event_time"],
+                    "source": row["source"],
+                    "event_type": row["event_type"],
+                    "magnitude": float(row["magnitude"]) if pd.notna(row["magnitude"]) else None,
+                    "magnitude_type": row.get("magnitude_type"),
+                    "h3_index_res7": row.get("h3_index_res7"),
+                    "h3_index_res9": row.get("h3_index_res9"),
+                    "state_fips": row.get("state_fips"),
+                    "county_fips": row.get("county_fips"),
+                    "damage_property": float(row["damage_property"])
+                    if pd.notna(row["damage_property"])
+                    else 0,
+                    "damage_crops": float(row["damage_crops"])
+                    if pd.notna(row["damage_crops"])
+                    else 0,
+                    "injuries": int(row.get("injuries", 0)),
+                    "deaths": int(row.get("deaths", 0)),
+                    "narrative": str(row.get("narrative", "")),
+                    "episode_id": int(row["episode_id"])
+                    if pd.notna(row.get("episode_id"))
+                    else None,
+                }
+            )
 
         batch_size = 1000
         total_inserted = 0
@@ -277,10 +299,10 @@ class NoaaStormsIngestor(BaseIngestor):
             params = {}
             for j, rec in enumerate(batch):
                 keys = list(rec.keys())
-                ph = ", ".join(f":v{i+j}_{k}" for k in keys)
+                ph = ", ".join(f":v{i + j}_{k}" for k in keys)
                 placeholders.append(f"({ph})")
                 for k in keys:
-                    params[f"v{i+j}_{k}"] = rec[k]
+                    params[f"v{i + j}_{k}"] = rec[k]
 
             cols = ", ".join(keys)
             values_str = ", ".join(placeholders)

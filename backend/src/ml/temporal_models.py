@@ -228,6 +228,7 @@ class TemporalModelTrainer:
             if mlflow_run:
                 try:
                     import mlflow
+
                     mlflow.log_metrics(
                         {"train_loss": avg_train_loss, "val_loss": avg_val_loss},
                         step=epoch,

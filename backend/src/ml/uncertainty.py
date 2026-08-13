@@ -91,14 +91,11 @@ class UncertaintyEstimator:
         """
         all_preds = []
 
-        for name, model in models.items():
+        for model in models.values():
             if hasattr(model, "predict_proba"):
                 # Tree-based model
                 proba = model.predict_proba(x_tabular)
-                if proba.ndim == 2:
-                    preds = proba[:, 1]
-                else:
-                    preds = proba
+                preds = proba[:, 1] if proba.ndim == 2 else proba
                 all_preds.append(preds)
             elif x_sequential is not None:
                 # Neural model - single forward pass
@@ -158,16 +155,18 @@ class UncertaintyEstimator:
             ci_upper = float(np.clip(mean_pred + z * total_std, 0.0, 1.0))
             mean_pred = float(np.clip(mean_pred, 0.0, 1.0))
 
-            results.append(UncertaintyPrediction(
-                mean=mean_pred,
-                std=total_std,
-                aleatoric=aleatoric,
-                epistemic=epistemic,
-                ci_lower=ci_lower,
-                ci_upper=ci_upper,
-                confidence_level=self.confidence_level,
-                calibrated=self._calibrator is not None,
-            ))
+            results.append(
+                UncertaintyPrediction(
+                    mean=mean_pred,
+                    std=total_std,
+                    aleatoric=aleatoric,
+                    epistemic=epistemic,
+                    ci_lower=ci_lower,
+                    ci_upper=ci_upper,
+                    confidence_level=self.confidence_level,
+                    calibrated=self._calibrator is not None,
+                )
+            )
 
         return results
 
@@ -189,9 +188,7 @@ class UncertaintyEstimator:
         Returns:
             self (for chaining).
         """
-        self._calibrator = IsotonicRegression(
-            y_min=0.0, y_max=1.0, out_of_bounds="clip"
-        )
+        self._calibrator = IsotonicRegression(y_min=0.0, y_max=1.0, out_of_bounds="clip")
         self._calibrator.fit(y_pred, y_true)
         return self
 

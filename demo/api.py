@@ -45,10 +45,13 @@ async def add_demo_header(request: Request, call_next):
 # Schemas
 # ---------------------------------------------------------------------------
 
+
 class PredictionRequest(BaseModel):
     h3_cell: str = Field(..., description="H3 cell index (resolution 7-9)")
     region: str = Field("TX", description="Region code (TX, CA, FL)")
-    horizon_hours: int = Field(24, ge=1, le=168, description="Forecast horizon in hours")
+    horizon_hours: int = Field(
+        24, ge=1, le=168, description="Forecast horizon in hours"
+    )
 
 
 class BatchPredictionRequest(BaseModel):
@@ -110,13 +113,34 @@ FEATURE_NAMES = [
 ]
 
 FEATURE_IMPORTANCES = [
-    0.142, 0.118, 0.097, 0.089, 0.081, 0.072, 0.064, 0.058, 0.053, 0.047,
-    0.039, 0.033, 0.028, 0.024, 0.019, 0.014, 0.010, 0.007, 0.004, 0.001,
+    0.142,
+    0.118,
+    0.097,
+    0.089,
+    0.081,
+    0.072,
+    0.064,
+    0.058,
+    0.053,
+    0.047,
+    0.039,
+    0.033,
+    0.028,
+    0.024,
+    0.019,
+    0.014,
+    0.010,
+    0.007,
+    0.004,
+    0.001,
 ]
 
 SAMPLE_H3_CELLS = [
-    "872a1008fffffff", "872a1009fffffff", "872a100afffffff",
-    "872a100bfffffff", "872a100cfffffff",
+    "872a1008fffffff",
+    "872a1009fffffff",
+    "872a100afffffff",
+    "872a100bfffffff",
+    "872a100cfffffff",
 ]
 
 ALERT_DESCRIPTIONS = [
@@ -133,6 +157,7 @@ ALERT_DESCRIPTIONS = [
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _risk_level(prob: float) -> str:
     if prob < 0.25:
@@ -184,21 +209,24 @@ def _generate_alerts(n: int = 5) -> list[dict]:
     alerts = []
     for i in range(n):
         ts = now - timedelta(minutes=random.randint(5, 600))
-        alerts.append({
-            "alert_id": str(uuid.uuid4()),
-            "timestamp": ts.isoformat(),
-            "severity": severities[i % len(severities)],
-            "region": random.choice(list(REGIONS.keys())),
-            "h3_cell": random.choice(SAMPLE_H3_CELLS),
-            "description": random.choice(ALERT_DESCRIPTIONS),
-            "acknowledged": random.choice([True, False]),
-        })
+        alerts.append(
+            {
+                "alert_id": str(uuid.uuid4()),
+                "timestamp": ts.isoformat(),
+                "severity": severities[i % len(severities)],
+                "region": random.choice(list(REGIONS.keys())),
+                "h3_cell": random.choice(SAMPLE_H3_CELLS),
+                "description": random.choice(ALERT_DESCRIPTIONS),
+                "acknowledged": random.choice([True, False]),
+            }
+        )
     return sorted(alerts, key=lambda a: a["timestamp"], reverse=True)
 
 
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
 
 @app.get("/")
 async def root():
@@ -228,7 +256,10 @@ async def list_regions():
 @app.post("/api/v1/predict")
 async def predict(req: PredictionRequest):
     if req.region not in REGIONS:
-        raise HTTPException(status_code=400, detail=f"Unknown region '{req.region}'. Valid: {list(REGIONS.keys())}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown region '{req.region}'. Valid: {list(REGIONS.keys())}",
+        )
     return _generate_prediction(req)
 
 
@@ -248,22 +279,22 @@ async def get_alerts():
 @app.get("/api/v1/model/info")
 async def model_info():
     return {
-        "model_type": "Weighted Ensemble",
-        "components": [
-            {"name": "XGBoost", "weight": 0.40, "version": "1.7.6"},
-            {"name": "LightGBM", "weight": 0.35, "version": "4.1.0"},
-            {"name": "LSTM (PyTorch)", "weight": 0.25, "version": "2.1.0"},
-        ],
-        "feature_count": len(FEATURE_NAMES),
-        "training_samples": 2_847_193,
-        "metrics": {
-            "auc_roc": 0.934,
-            "precision_at_80_recall": 0.871,
-            "brier_score": 0.062,
-            "f1_score": 0.889,
+        "mode": "demo",
+        "prediction_source": "heuristic simulation; no trained model is loaded",
+        "demo_feature_count": len(FEATURE_NAMES),
+        "evaluated_research_artifact": {
+            "components": ["XGBoost", "LightGBM"],
+            "combination": "simple probability average",
+            "feature_count": 138,
+            "samples": 12_000,
+            "target_scope": "physics-informed synthetic outage targets",
+            "metrics": {
+                "xgboost_auc_roc": 0.967,
+                "ensemble_auc_roc": 0.966,
+                "ensemble_f1_at_threshold_0_39": 0.947,
+                "calibrated_ece": 0.004,
+            },
         },
-        "last_trained": "2025-12-15T08:30:00Z",
-        "mlflow_run_id": "a1b2c3d4e5f6",
     }
 
 
@@ -273,4 +304,4 @@ async def feature_importance():
         {"rank": i + 1, "name": FEATURE_NAMES[i], "importance": FEATURE_IMPORTANCES[i]}
         for i in range(len(FEATURE_NAMES))
     ]
-    return {"features": features, "model_version": "v2.4.1-ensemble"}
+    return {"features": features, "model_version": "demo-heuristic"}

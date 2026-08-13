@@ -1,49 +1,50 @@
-# State Agnostic Power Outage Prediction Platform
+# Compound-Weather Power Outage Risk Modeling Platform
 
-A production oriented machine learning platform for forecasting weather induced power outages using compound weather event modeling, calibrated uncertainty estimation, and state agnostic deployment.
+A final-semester, three-student B.Tech thesis prototype for studying weather-induced power-outage risk using compound-event modeling and calibrated uncertainty.
 
-Unlike traditional research projects that stop at model training, this project was engineered as an end to end system with reproducible data pipelines, automated testing, backend APIs, an interactive frontend, experiment tracking, and containerized deployment.
+The repository pairs the evaluated ML workflow with a deployment-oriented prototype: data pipelines, automated tests, backend APIs, an interactive frontend, experiment tracking, and container definitions.
 
 ## Why this project exists
 
 Power outage prediction models are often built for a single geographic region and struggle when deployed elsewhere because they learn region specific weather patterns instead of more general relationships.
 
-This project explores whether modeling interactions between multiple weather events combined with calibrated uncertainty estimation can improve cross state generalization while remaining practical to deploy as a production system.
+This project explores whether modeling interactions between multiple weather events, together with calibrated uncertainty estimation, can support transfer experiments across simulated state contexts. It has not been validated as a utility production system.
 
 ## Highlights
 
 | Feature | Description |
 |---------|-------------|
 | Compound Weather Modeling | Models interactions between multiple weather events instead of treating them independently. |
-| State Agnostic Design | Region specific configuration allows deployment across different states without changing model code. |
-| Calibrated Predictions | Isotonic calibration improves confidence estimates for operational use. |
-| Production Architecture | FastAPI backend, Next.js dashboard, Redis, TimescaleDB, Docker, MLflow. |
-| Automated Testing | Unit and integration tests validate the complete prediction pipeline. |
+| Configurable Research Design | Region-specific configuration supports experiments across different state contexts without changing model code. |
+| Calibrated Predictions | Isotonic calibration improves confidence estimates on the synthetic-target benchmark. |
+| Deployment-Oriented Architecture | FastAPI backend and Next.js dashboard, with experimental Redis, TimescaleDB, Docker, and MLflow integration. |
+| Automated Testing | Unit and integration tests cover core feature, evaluation, schema, and API behavior. |
 
 ## At a Glance
 
 | Category | Details |
 |----------|---------|
-| Problem | Predict weather induced power outages across multiple states |
+| Problem | Model compound-weather outage risk in a simulated multi-state setup |
 | Architecture | FastAPI, Next.js, Redis, TimescaleDB, Docker, MLflow |
 | Machine Learning | XGBoost, LightGBM ensemble with calibrated uncertainty |
-| Deployment | Containerized services with reproducible pipelines |
-| Testing | 57 automated tests covering unit and integration scenarios |
-| Best Result | AUC ROC 0.967 |
+| Deployment | API/dashboard prototype; container definitions remain experimental |
+| Testing | 58 automated unit and integration tests |
+| Best Result | AUC-ROC 0.967 on physics-informed synthetic outage targets |
 
 ## Results
 
+> [!IMPORTANT]
+> These headline results evaluate physics-informed synthetic outage targets derived from weather severity. They demonstrate the modeling and calibration workflow; they are not a substitute for validation against measured utility outage records.
+
 | Metric | Value |
 |--------|-------|
-| AUC-ROC | **0.967** (95% CI: 0.944-0.984) |
-| F1 Score | **0.947** |
-| Precision | 1.000 |
-| Recall | 0.900 |
-| ECE (calibrated) | **0.004** |
-| Cross-state TX to CA | AUC 0.904 |
-| Cross-state TX to FL | AUC 0.971 |
+| XGBoost AUC-ROC | **0.967** |
+| Two-tree ensemble AUC-ROC | **0.966** (95% bootstrap CI: 0.944-0.984) |
+| Ensemble F1 at validation-selected threshold 0.39 | **0.947** |
+| Ensemble precision / recall at threshold 0.39 | 1.000 / 0.900 |
+| Calibrated ensemble ECE | **0.004** |
 | Features | 138 |
-| Tests | 57/57 passing |
+| Automated tests | 58 passing locally; see CI for the current run status |
 
 ## System Architecture
 
@@ -81,13 +82,13 @@ Instead of treating weather events independently, the system models their intera
 
 ### Confidence Calibration
 
-Raw model probabilities are calibrated using isotonic regression to improve confidence estimates for operational decision making. Calibration reduced Expected Calibration Error from 0.267 to 0.004.
+Raw model probabilities are calibrated using isotonic regression to improve confidence estimates in the synthetic-target experiment. Calibration reduced Expected Calibration Error from 0.267 to 0.004 on that benchmark.
 
 ### State Agnostic Configuration
 
-Regional thresholds and hazard profiles are separated into configuration files, allowing deployment across multiple states without modifying the prediction pipeline.
+Regional thresholds and hazard profiles are separated into configuration files, allowing the same code path to support preliminary transfer experiments across simulated state contexts.
 
-### Production First Design
+### Deployment-Oriented Design
 
 Training, inference, testing, deployment, and experiment tracking were designed as independent components rather than notebook based workflows, making the system easier to maintain and extend.
 
@@ -99,19 +100,24 @@ git clone https://github.com/DarthAether/outage-prediction-system.git
 cd outage-prediction-system
 
 # Set up Python environment
-python -m venv venv
-venv/Scripts/activate  # Windows
-pip install pandas numpy scikit-learn xgboost lightgbm h3 structlog scipy shap
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+python -m pip install -e "./backend[ml,test]"
 
-# Build dataset (processes NOAA Storm Events, generates features)
-python scripts/build_dataset.py --states TX --sample-size 12000
-
-# Train models
-python scripts/train.py --ablation --bootstrap
+# Train from the tracked processed research fixture
+python scripts/train.py --dataset data/processed/training_dataset.parquet --ablation --bootstrap
 
 # Run tests
-PYTHONPATH=backend pytest backend/tests/unit/ -v
+python -m pytest backend/tests -q
+
+# Verify the frontend
+cd frontend
+npm ci
+npm run build
 ```
+
+The tracked processed fixture supports code verification. Rebuilding it from source requires downloading the NOAA Storm Events details CSV, placing it under `data/raw/`, and then running `scripts/build_dataset.py`; that script does not currently download the source file itself.
 
 ## Data Sources
 
@@ -119,7 +125,7 @@ PYTHONPATH=backend pytest backend/tests/unit/ -v
 |--------|---------|-------|
 | [NOAA Storm Events](https://www.ncdc.noaa.gov/stormevents/) | 69,887 (2022) | Weather events with geocoding |
 | Physics-informed synthetic generator | 12,478 | Outage targets correlated with weather severity |
-| ERCOT-modeled grid load | 8,533 | Hourly load, reserve margin, frequency |
+| Simulated ERCOT-style grid load | 8,533 | Hourly load, reserve margin, frequency |
 
 ## Project Structure
 
@@ -133,21 +139,21 @@ outage-prediction-system/
 │   ├── ml/               # XGBoost, LightGBM, ensemble, evaluation, SHAP
 │   ├── services/         # Prediction + alert services
 │   └── streaming/        # Redis pub/sub client
-├── backend/tests/        # 57 tests (51 unit + 6 integration)
-├── frontend/src/         # Next.js 14 dashboard
+├── backend/tests/        # 58 tests (51 unit + 7 integration)
+├── frontend/src/         # Next.js 15 dashboard
 ├── scripts/
 │   ├── build_dataset.py  # End-to-end data pipeline
 │   ├── train.py          # Model training + evaluation
-│   ├── cross_state_eval.py  # Multi-state generalization
+│   ├── cross_state_eval.py  # Simulated state-context transfer experiment
 │   ├── shap_analysis.py  # SHAP explainability
 │   └── case_study.py     # March 2022 TX storm analysis
 ├── models/               # Trained XGBoost, LightGBM, scaler, calibrator
 ├── paper/
-│   ├── main.tex          # IEEE conference paper
+│   ├── main.tex          # Conference manuscript (under review)
 │   ├── references.bib    # 24 verified references
 │   └── figures/          # 10 publication-quality figures
 ├── config/regions/       # TX, CA, FL region configs
-├── docker/               # Docker Compose stack
+├── docker/               # Experimental container definitions
 └── data/processed/       # Training datasets (TX, CA, FL)
 ```
 
@@ -158,11 +164,13 @@ outage-prediction-system/
 | Backend | FastAPI, SQLAlchemy, TimescaleDB |
 | Frontend | Next.js, TypeScript, Recharts |
 | Machine Learning | XGBoost, LightGBM, SHAP |
-| Infrastructure | Docker Compose, Redis, MLflow |
+| Experimental infrastructure | Docker Compose, Redis, MLflow |
 | Data Processing | pandas, NumPy, H3 |
 | Testing | Pytest |
 
-## Cross-State Generalization
+## Preliminary Simulated Transfer Results
+
+These figures use state-specific datasets produced by the same synthetic target generator. They are exploratory transfer results within the simulated setup, not evidence of generalization to measured utility outages.
 
 | State | TX-trained AUC | Local AUC | Gap |
 |-------|---------------|-----------|-----|
@@ -179,8 +187,8 @@ The larger engineering challenge was creating a system that was reproducible, te
 Some of the most valuable lessons from this project were:
 
 - Separating feature engineering from model training improved reproducibility.
-- Configuration driven regional behavior made cross state deployment much simpler.
-- Confidence calibration is as important as prediction accuracy for operational systems.
+- Configuration-driven regional behavior made simulated transfer experiments easier to organize.
+- Confidence calibration is as important as ranking performance when evaluating a decision-support benchmark.
 - Automated testing significantly reduced regression risk while iterating on feature engineering.
 
 ## Future Work
@@ -191,7 +199,9 @@ Some of the most valuable lessons from this project were:
 - Model monitoring and drift detection
 - Support for additional geographic regions
 
-## Authors
+## Team
+
+This project was completed as a three-student B.Tech thesis. The repository represents the team's shared work.
 
 **Vijaya Sivanjan Kommuri**, **Tejaswi Mahadev**, **Rhea Chris Pramila Chase**
 
@@ -201,4 +211,4 @@ Under the guidance of **Dr. Mohammed Adam Baba**
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+Apache License 2.0. See [LICENSE](LICENSE) for details.

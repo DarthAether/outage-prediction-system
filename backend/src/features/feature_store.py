@@ -58,9 +58,7 @@ class FeatureStore:
         features: dict[str, float] = {}
 
         # Temporal features
-        temporal_feats = self.temporal.compute_all(
-            weather_df, outage_df, load_df, timestamp
-        )
+        temporal_feats = self.temporal.compute_all(weather_df, outage_df, load_df, timestamp)
         features.update(temporal_feats)
 
         # Spatial features
@@ -78,9 +76,9 @@ class FeatureStore:
             features["population_density"] = float(
                 socioeconomic_data.get("population_density", 0) or 0
             )
-            features["median_income_normalized"] = float(
-                socioeconomic_data.get("median_income", 0) or 0
-            ) / 100_000.0
+            features["median_income_normalized"] = (
+                float(socioeconomic_data.get("median_income", 0) or 0) / 100_000.0
+            )
             features["critical_facility_density"] = float(
                 socioeconomic_data.get("critical_facilities_count", 0) or 0
             )
@@ -150,9 +148,7 @@ class FeatureStore:
                     features["target_outage"] = int(target_mask.any())
                     matching = outage_df.loc[target_mask]
                     features["target_max_outage_fraction"] = (
-                        float(matching["outage_fraction"].max())
-                        if not matching.empty
-                        else 0.0
+                        float(matching["outage_fraction"].max()) if not matching.empty else 0.0
                     )
                 else:
                     features["target_outage"] = 0
@@ -174,7 +170,9 @@ class FeatureStore:
             "feature_store.built",
             rows=len(df),
             features=len(df.columns) - 4,  # exclude h3, timestamp, targets
-            positive_rate=round(df["target_outage"].mean(), 4) if "target_outage" in df.columns else 0,
+            positive_rate=round(df["target_outage"].mean(), 4)
+            if "target_outage" in df.columns
+            else 0,
         )
         return df
 
@@ -187,42 +185,81 @@ class FeatureStore:
         """
         return {
             "temporal": [
-                c for c in [
-                    "weather_count_1h", "weather_count_3h", "weather_count_6h",
-                    "weather_count_12h", "weather_count_24h", "weather_count_48h",
-                    "weather_count_72h", "weather_max_mag_1h", "weather_max_mag_3h",
-                    "weather_max_mag_6h", "weather_max_mag_12h", "weather_max_mag_24h",
-                    "weather_max_mag_48h", "weather_max_mag_72h",
-                    "weather_mean_mag_1h", "weather_mean_mag_3h", "weather_mean_mag_6h",
-                    "weather_mean_mag_12h", "weather_mean_mag_24h",
-                    "weather_mean_mag_48h", "weather_mean_mag_72h",
-                    "weather_distinct_types_1h", "weather_distinct_types_3h",
-                    "weather_distinct_types_6h", "weather_distinct_types_12h",
-                    "weather_distinct_types_24h", "weather_distinct_types_48h",
+                c
+                for c in [
+                    "weather_count_1h",
+                    "weather_count_3h",
+                    "weather_count_6h",
+                    "weather_count_12h",
+                    "weather_count_24h",
+                    "weather_count_48h",
+                    "weather_count_72h",
+                    "weather_max_mag_1h",
+                    "weather_max_mag_3h",
+                    "weather_max_mag_6h",
+                    "weather_max_mag_12h",
+                    "weather_max_mag_24h",
+                    "weather_max_mag_48h",
+                    "weather_max_mag_72h",
+                    "weather_mean_mag_1h",
+                    "weather_mean_mag_3h",
+                    "weather_mean_mag_6h",
+                    "weather_mean_mag_12h",
+                    "weather_mean_mag_24h",
+                    "weather_mean_mag_48h",
+                    "weather_mean_mag_72h",
+                    "weather_distinct_types_1h",
+                    "weather_distinct_types_3h",
+                    "weather_distinct_types_6h",
+                    "weather_distinct_types_12h",
+                    "weather_distinct_types_24h",
+                    "weather_distinct_types_48h",
                     "weather_distinct_types_72h",
-                    "lag_outage_1h", "lag_outage_3h", "lag_outage_6h",
-                    "lag_outage_12h", "lag_outage_24h", "lag_outage_48h",
+                    "lag_outage_1h",
+                    "lag_outage_3h",
+                    "lag_outage_6h",
+                    "lag_outage_12h",
+                    "lag_outage_24h",
+                    "lag_outage_48h",
                     "lag_outage_168h",
-                    "hour_sin", "hour_cos", "dow_sin", "dow_cos",
-                    "month_sin", "month_cos", "is_weekend",
-                    "trend_outage_3h", "trend_outage_6h", "trend_outage_12h",
-                    "current_load_mw", "reserve_margin_pct", "load_capacity_ratio",
+                    "hour_sin",
+                    "hour_cos",
+                    "dow_sin",
+                    "dow_cos",
+                    "month_sin",
+                    "month_cos",
+                    "is_weekend",
+                    "trend_outage_3h",
+                    "trend_outage_6h",
+                    "trend_outage_12h",
+                    "current_load_mw",
+                    "reserve_margin_pct",
+                    "load_capacity_ratio",
                 ]
             ],
             "spatial": [
-                "neighbor_weather_count", "neighbor_weather_max_mag",
-                "neighbor_weather_mean_mag", "neighbor_outage_mean",
-                "neighbor_outage_max", "neighbor_outage_spread",
-                "transmission_line_km", "distribution_line_km",
-                "substations_count", "avg_line_age_years",
-                "vegetation_density", "line_density_per_km2",
+                "neighbor_weather_count",
+                "neighbor_weather_max_mag",
+                "neighbor_weather_mean_mag",
+                "neighbor_outage_mean",
+                "neighbor_outage_max",
+                "neighbor_outage_spread",
+                "transmission_line_km",
+                "distribution_line_km",
+                "substations_count",
+                "avg_line_age_years",
+                "vegetation_density",
+                "line_density_per_km2",
                 "infrastructure_age_risk",
             ],
             "compound": [
-                c for c in []  # dynamically populated from compound builder output
+                c
+                for c in []  # dynamically populated from compound builder output
             ],
             "socioeconomic": [
-                "population_density", "median_income_normalized",
-                "critical_facility_density", "housing_age_median",
+                "population_density",
+                "median_income_normalized",
+                "critical_facility_density",
+                "housing_age_median",
             ],
         }

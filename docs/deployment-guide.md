@@ -1,6 +1,8 @@
 # Deployment Guide
 
-Step-by-step instructions for deploying the Outage Prediction System from a clean machine to a running instance with data ingestion, trained models, and a live dashboard.
+> **Experimental-document status:** The container stack and several services described here are incomplete and are not a verified clean-machine deployment path. Do not use this guide as evidence that the thesis prototype is deployed or production-ready. The root README contains the supported local verification steps for the evaluated two-tree benchmark and frontend.
+
+This guide preserves the project's target deployment design for future implementation work.
 
 ---
 

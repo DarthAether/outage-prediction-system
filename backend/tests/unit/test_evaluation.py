@@ -1,7 +1,6 @@
 """Tests for model evaluation framework."""
 
 import numpy as np
-import pytest
 
 from src.ml.evaluation import ModelEvaluator
 

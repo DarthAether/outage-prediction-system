@@ -11,9 +11,7 @@ class UncertaintyEstimate(BaseModel):
     upper: float = Field(ge=0.0, le=1.0, description="Upper bound of confidence interval")
     aleatoric: float = Field(ge=0.0, description="Data-inherent noise uncertainty")
     epistemic: float = Field(ge=0.0, description="Model structural uncertainty")
-    confidence_level: float = Field(
-        default=0.90, ge=0.0, le=1.0, description="CI confidence level"
-    )
+    confidence_level: float = Field(default=0.90, ge=0.0, le=1.0, description="CI confidence level")
 
 
 class PredictionRequest(BaseModel):
