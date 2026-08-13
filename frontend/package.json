@@ -2,6 +2,10 @@
   "name": "outage-prediction-frontend",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "npm@11.6.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
